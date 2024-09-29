@@ -175,7 +175,7 @@ common::ByteArray JsonSerializer::SerializePublishCustomRequest(
     common::DateTime dt = common::DateTime::fromTime_t(
       std::chrono::system_clock::to_time_t(request.ftLicenseValidUntil));
         pPolicyJson->SetNamedString("LicenseValidUntil", dt.toUTC().toString(
-                                  Qt::ISODate).toStdString());
+                                  common::ISODate));
   }
 
   // the appdata should look like this:
@@ -368,7 +368,8 @@ UsageRestrictionsResponse JsonSerializer::DeserializeUsageRestrictionsResponse(
         response.contentValidUntil += 'Z';
     }
     auto tmp = common::DateTime::fromString(
-      QString::fromStdString(response.contentValidUntil), Qt::ISODate);
+      response.contentValidUntil.c_str(), common::ISODate);
+      //QString::fromStdString(response.contentValidUntil), common::ISODate);
     response.ftContentValidUntil = std::chrono::system_clock::from_time_t(
       tmp.toLocalTime().toTime_t());
   }
@@ -381,7 +382,8 @@ UsageRestrictionsResponse JsonSerializer::DeserializeUsageRestrictionsResponse(
   {
     auto tmp =
       common::DateTime::fromString(
-        QString::fromStdString(response.licenseValidUntil), Qt::ISODate);
+        response.licenseValidUntil.c_str(), common::ISODate);
+        //QString::fromStdString(response.licenseValidUntil), common::ISODate);
     response.ftLicenseValidUntil = std::chrono::system_clock::from_time_t(
       tmp.toLocalTime().toTime_t());
   }

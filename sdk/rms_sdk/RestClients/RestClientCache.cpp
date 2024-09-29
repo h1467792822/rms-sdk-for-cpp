@@ -516,7 +516,7 @@ common::DateTime RestClientCache::GetExpiryTimeFromFileName(
 
   SELF::ReplaceBackNotAllowedCharactersInDateTime(strExpires);
 
-  return common::DateTime::fromString(strExpires.c_str(), Qt::ISODate);
+  return common::DateTime::fromString(strExpires.c_str(), common::ISODate);
 }
 
 // delete the file

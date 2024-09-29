@@ -14,8 +14,8 @@
 
 namespace rmscore {
 namespace common {
-uint64_t    timeToWinFileTime(const QDateTime& dateTime);
-std::string timeToString(const QDateTime& dateTime);
+uint64_t    timeToWinFileTime(const DateTime& dateTime);
+std::string timeToString(const DateTime& dateTime);
 ByteArray   ConvertBase64ToBytes(const ByteArray& base64str);
 ByteArray   ConvertBytesToBase64(const ByteArray& bytes);
 ByteArray   ConvertBytesToBase64(const void  *bytes,

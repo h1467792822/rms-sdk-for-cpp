@@ -226,7 +226,10 @@ shared_ptr<ProtectionPolicy>ProtectionPolicy::Create(
 
   common::Locale loc;
 
-  request.language = loc.name().replace('_', "-").toStdString();
+  //request.language = loc.name().replace('_', "-").toStdString();
+  auto language = loc.name();
+  std::replace(language.begin(), language.end(), '_', '-');
+  request.language = language;
 
   request.encryptedApplicationData = descriptor.encryptedApplicationData;
   request.signedApplicationData    = descriptor.signedApplicationData;
@@ -499,7 +502,7 @@ std::shared_ptr<ProtectionPolicy>ProtectionPolicy::GetCachedProtectionPolicy(
   const size_t   cbPublishLicense,
   const string   requester)
 {
-  common::MutexLocker lock(&s_cachedProtectionPoliciesMutex);
+  common::MutexLocker lock(s_cachedProtectionPoliciesMutex);
 
   if (pbPublishLicense == nullptr) {
     throw exceptions::RMSNullPointerException("NULL pointer exception");
@@ -555,7 +558,7 @@ std::shared_ptr<ProtectionPolicy>ProtectionPolicy::GetCachedProtectionPolicy(
 void ProtectionPolicy::AddProtectionPolicyToCache(
   shared_ptr<ProtectionPolicy>pProtectionPolicy)
 {
-  common::MutexLocker lock(&s_cachedProtectionPoliciesMutex);
+  common::MutexLocker lock(s_cachedProtectionPoliciesMutex);
 
   if (nullptr ==
       s_pCachedProtectionPolicies) s_pCachedProtectionPolicies =

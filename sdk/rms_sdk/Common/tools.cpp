@@ -15,11 +15,12 @@ using namespace std;
 
 namespace rmscore {
 namespace common {
-uint64_t timeToWinFileTime(const QDateTime& dateTime) {
+uint64_t timeToWinFileTime(const DateTime& dateTime) {
   // Definition of FILETIME from MSDN:
   // Contains a 64-bit value representing the number of 100-nanosecond intervals
   // since January 1, 1601 (UTC).
-  QDateTime origin(QDate(1601, 1, 1), QTime(0, 0, 0, 0), Qt::UTC);
+  //QDateTime origin(QDate(1601, 1, 1), QTime(0, 0, 0, 0), Qt::UTC);
+  DateTime origin(1601, 1, 1);
 
   // Get offset - note we need 100-nanosecond intervals, hence we multiply by
   // 10000.
@@ -37,11 +38,12 @@ ByteArray ConvertBase64ToBytes(const ByteArray& base64str) {
   return ByteArray(convArray.begin(), convArray.end());
 }
 
-string timeToString(const QDateTime& dateTime) {
+string timeToString(const DateTime& dateTime) {
   if (!dateTime.isNull())
   {
     //    return dateTime.toString("yyyy-MM-DDThh:mm:ssZ").toStdString();
-    return dateTime.toString(Qt::ISODate).toStdString();
+    //return dateTime.toString(Qt::ISODate).toStdString();
+    return dateTime.toString(ISODate);
   }
   else
   {
