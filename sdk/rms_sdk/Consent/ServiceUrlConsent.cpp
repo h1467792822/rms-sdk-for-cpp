@@ -6,6 +6,7 @@
  * ======================================================================
 */
 
+#include <algorithm>
 #include "ServiceUrlConsent.h"
 #include "../ModernAPI/ConsentType.h"
 

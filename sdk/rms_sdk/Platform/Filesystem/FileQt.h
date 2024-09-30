@@ -9,7 +9,9 @@
 #ifndef FILEQT
 #define FILEQT
 #include "IFile.h"
-#include <QFile>
+//#include <QFile>
+#include <cstdio>
+#include <string>
 #include "../../ModernAPI/RMSExceptions.h"
 
 namespace rmscore {
@@ -31,16 +33,21 @@ public:
   virtual size_t      GetSize() override;
 
 private:
+  FILE* file = nullptr;
+  const std::string path;
+  FileOpenModes mode;
+  //QFile impl_;
 
-  QFile impl_;
-
-  static QIODevice::OpenModeFlag toQtMode(FileOpenModes mode)
+  //static QIODevice::OpenModeFlag toQtMode(FileOpenModes mode)
+  static const char* toMode(FileOpenModes mode, bool trunc = false)
   {
     switch (mode)
     {
-    case FILE_OPEN_WRITE: return QIODevice::WriteOnly;
+    //case FILE_OPEN_WRITE: return QIODevice::WriteOnly;
+    case FILE_OPEN_WRITE: return !trunc ? "a" : "w";
 
-    case FILE_OPEN_READ: return QIODevice::ReadOnly;
+    //case FILE_OPEN_READ: return QIODevice::ReadOnly;
+    case FILE_OPEN_READ: return !trunc ? "r" : "w+";
 
     default: throw exceptions::RMSInvalidArgumentException("unknown FileOpenMode");
     }

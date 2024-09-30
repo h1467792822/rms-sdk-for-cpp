@@ -13,9 +13,10 @@
 #include <chrono>
 #include <mutex>
 #include <locale>
-#include <QDataStream>
+//#include <QDataStream>
 #include "CommonTypes.h"
 #include "DateTime.h"
+//#include "DataStream.h"
 
 namespace rmscore {
 namespace common {
@@ -24,8 +25,8 @@ namespace common {
 using Mutex = std::mutex;
 using MutexLocker = std::lock_guard<std::mutex>;
 using Locale = std::locale;
-using DataStream = QDataStream;
-using IODevice = QIODevice;
+//using DataStream = ::DataStream;
+//using IODevice = ::DataStream;
 } // namespace common
 } // namespace rmscore
 #endif // _RMS_LIB_FRAMEWORKSPESIFIC_H_

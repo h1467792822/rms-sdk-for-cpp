@@ -10,6 +10,7 @@
 #define _RMS_LIB_PROTECTIONPOLICY_H_
 
 #include <chrono>
+#include <list>
 #include <CryptoAPI.h>
 #include "../Common/CommonTypes.h"
 #include "../Common/FrameworkSpecificTypes.h"
