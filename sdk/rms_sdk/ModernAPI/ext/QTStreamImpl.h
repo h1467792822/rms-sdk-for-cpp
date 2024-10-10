@@ -11,7 +11,7 @@
 
 #include <mutex>
 #include "../ModernAPIExport.h"
-#include <QSharedPointer>
+// #include <QSharedPointer>
 #include <QDataStream>
 #include <CryptoAPI.h>
 
@@ -20,7 +20,7 @@ class DLL_PUBLIC_RMS QTStreamImpl :
   public std::enable_shared_from_this<QTStreamImpl>{
 public:
 
-  static rmscrypto::api::SharedStream Create(QSharedPointer<QDataStream>stream);
+  static rmscrypto::api::SharedStream Create(std::shared_ptr<QDataStream>stream);
   virtual ~QTStreamImpl() {}
 
 
@@ -54,10 +54,10 @@ public:
 
 private:
 
-  QTStreamImpl(QSharedPointer<QDataStream>stream);
+  QTStreamImpl(std::shared_ptr<QDataStream>stream);
   QTStreamImpl() = delete;
 
-  QSharedPointer<QDataStream> stream_;
+  std::shared_ptr<QDataStream> stream_;
   std::mutex locker_; // QDataStream is not thread safe!!!
 };
 #endif // ifndef _RMS_LIB_QDATASTREAM_H_

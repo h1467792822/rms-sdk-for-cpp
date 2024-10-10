@@ -13,13 +13,13 @@ using namespace rmscore::platform::logger;
 using namespace std;
 
 
-SharedStream QTStreamImpl::Create(QSharedPointer<QDataStream>stream) {
+SharedStream QTStreamImpl::Create(std::shared_ptr<QDataStream>stream) {
   auto self = new QTStreamImpl(stream);
 
   return static_pointer_cast<IStream>(shared_ptr<QTStreamImpl>(self));
 }
 
-QTStreamImpl::QTStreamImpl(QSharedPointer<QDataStream>stream)
+QTStreamImpl::QTStreamImpl(std::shared_ptr<QDataStream>stream)
   : stream_(stream) {}
 
 shared_future<int64_t>QTStreamImpl::ReadAsync(uint8_t    *pbBuffer,
@@ -106,7 +106,7 @@ SharedStream QTStreamImpl::Clone() {
   // first lock object
   unique_lock<mutex> lock(locker_);
   auto self =
-    new QTStreamImpl(QSharedPointer<QDataStream>::create(stream_->device()));
+    new QTStreamImpl(make_shared<QDataStream>(stream_->device()));
 
   return static_pointer_cast<IStream>(shared_ptr<QTStreamImpl>(self));
 }
