@@ -13,7 +13,7 @@
 #include <QTimer>
 #include "DnsServerResolverQt.h"
 #include <QUdpSocket>
-#include <QThread>
+//#include <QThread>
 #include "../../Platform/Logger/Logger.h"
 
 using namespace std;

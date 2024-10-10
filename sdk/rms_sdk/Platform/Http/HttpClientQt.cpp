@@ -9,7 +9,7 @@
 #ifdef QTFRAMEWORK
 
 #include "HttpClientQt.h"
-#include <QThread>
+//#include <QThread>
 //#include <QMutex>
 #include <QEventLoop>
 #include <QCoreApplication>
