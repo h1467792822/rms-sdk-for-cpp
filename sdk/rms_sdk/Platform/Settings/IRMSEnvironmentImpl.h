@@ -10,7 +10,7 @@
 #define _RMS_LIB_IRMSENVIRONMENT_IMPL_H
 
 #include <mutex>
-#include <QAtomicInt>
+#include <atomic>
 
 #include "../../ModernAPI/IRMSEnvironment.h"
 
@@ -30,7 +30,7 @@ public:
 
 private:
 
-  QAtomicInt _optLog;
+  std::atomic_int _optLog;
 };
 
 extern std::shared_ptr<IRMSEnvironmentImpl> _instance;
