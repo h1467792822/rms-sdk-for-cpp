@@ -10,7 +10,7 @@
 
 #include "HttpClientQt.h"
 #include <QThread>
-#include <QMutex>
+//#include <QMutex>
 #include <QEventLoop>
 #include <QCoreApplication>
 #include <QTimer>

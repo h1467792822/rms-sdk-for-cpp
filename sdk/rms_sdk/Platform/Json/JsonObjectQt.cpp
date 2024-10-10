@@ -8,7 +8,7 @@
 
 #ifdef QTFRAMEWORK
 #include <QVariantMap>
-#include <QMap>
+//#include <QMap>
 #include <QJsonObject>
 #include <QJsonDocument>
 
