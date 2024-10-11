@@ -4,7 +4,7 @@ TARGET    = modjson
 
 QT       -= gui
 TEMPLATE  = lib
-CONFIG   += staticlib warn_on c++11 debug_and_release
+CONFIG   += staticlib warn_on C++17 debug_and_release
 
 CONFIG(debug, debug|release) {
     TARGET = $$join(TARGET,,,d)

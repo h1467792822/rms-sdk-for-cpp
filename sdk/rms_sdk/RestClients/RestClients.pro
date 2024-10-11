@@ -6,7 +6,7 @@ QT -= gui
 QT += core xml network
 
 TEMPLATE = lib
-CONFIG  += staticlib c++11 debug_and_release
+CONFIG  += staticlib C++17 debug_and_release
 
 INCLUDEPATH += $$REPO_ROOT/sdk/rmscrypto_sdk/CryptoAPI
 

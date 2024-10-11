@@ -7,7 +7,7 @@ TEMPLATE  = app
 QT       += network xml xmlpatterns testlib
 QT       -= gui
 
-CONFIG   += console c++11 debug_and_release
+CONFIG   += console C++17 debug_and_release
 CONFIG   -= app_bundle
 
 INCLUDEPATH       += $$REPO_ROOT/sdk/rmscrypto_sdk/CryptoAPI

@@ -4,7 +4,7 @@ TARGET    = rmscrypto
 
 
 TEMPLATE = lib
-CONFIG  += plugin warn_on c++11 debug_and_release
+CONFIG  += plugin warn_on C++17 debug_and_release
 QT      -= gui
 QT      += core
 

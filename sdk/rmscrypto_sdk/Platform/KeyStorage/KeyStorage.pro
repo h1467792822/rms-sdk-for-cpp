@@ -5,7 +5,7 @@ TARGET    = platformkeystorage
 QT       -= gui
 
 TEMPLATE  = lib
-CONFIG   += staticlib warn_on c++11 debug_and_release
+CONFIG   += staticlib warn_on C++17 debug_and_release
 QT       += core
 
 unix:!mac:INCLUDEPATH  += /usr/include/glib-2.0/ /usr/include/libsecret-1/ /usr/lib/x86_64-linux-gnu/glib-2.0/include/

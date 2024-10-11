@@ -11,6 +11,7 @@
 #include"FileSystemQt.h"
 #include"FileQt.h"
 #include "../../Platform/Logger/Logger.h"
+#include "../../Common/RMSDir.h"
 
 using namespace rmscore::platform::logger;
 
@@ -43,8 +44,9 @@ void FileSystemQt::DeleteLocalStorageFile(const std::string& filePath)
 void IFileSystem::CreateDirectory(const std::string& dirPath) {
     auto directory = QString::fromStdString(dirPath);
     if (!QFile::exists(directory)) {
-      QDir dir;
-      dir.mkpath(directory);
+      // QDir dir;
+      // dir.mkpath(directory);
+      common::RMSDir::mkpath(dirPath);
     }
 }
 

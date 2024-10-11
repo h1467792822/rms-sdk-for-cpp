@@ -9,7 +9,7 @@ DEFINES     += RMS_LIBRARY
 TEMPLATE  = lib
 QT       += core xml xmlpatterns widgets network
 QT 	     -= gui
-CONFIG   += plugin c++11 debug_and_release warn_on
+CONFIG   += plugin C++17 debug_and_release warn_on
 QMAKE_CFLAGS_WARN_ON -= -W3
 QMAKE_CFLAGS_WARN_ON += -W4
 

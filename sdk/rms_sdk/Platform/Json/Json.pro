@@ -6,7 +6,7 @@ TEMPLATE = lib
 
 DEFINES += QTFRAMEWORK
 
-CONFIG += staticlib warn_on c++11 debug_and_release
+CONFIG += staticlib warn_on C++17 debug_and_release
 
 QT += core
 QT -= gui
