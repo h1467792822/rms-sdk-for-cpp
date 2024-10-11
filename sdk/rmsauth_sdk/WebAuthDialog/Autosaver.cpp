@@ -54,10 +54,15 @@ AutoSaver::~AutoSaver()
 
 void AutoSaver::changeOccurred()
 {
-    if (m_firstChange.isNull())
-        m_firstChange.start();
+    //if (m_firstChange.isNull())
+    //    m_firstChange.start();
 
-    if (m_firstChange.elapsed() > MAXWAIT) {
+    if (m_firstChange.time_since_epoch().count() == 0) {
+            m_firstChange = std::chrono::steady_clock::now();
+    }
+    auto now = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_firstChange);
+    if (elapsed.count() > MAXWAIT) {
         saveIfNeccessary();
     } else {
         m_timer.start(AUTOSAVE_IN, this);
@@ -78,7 +83,7 @@ void AutoSaver::saveIfNeccessary()
     if (!m_timer.isActive())
         return;
     m_timer.stop();
-    m_firstChange = QTime();
+    m_firstChange = std::chrono::steady_clock::now();
     if (!QMetaObject::invokeMethod(parent(), "save", Qt::DirectConnection)) {
         qWarning() << "AutoSaver: error invoking slot save() on parent";
     }

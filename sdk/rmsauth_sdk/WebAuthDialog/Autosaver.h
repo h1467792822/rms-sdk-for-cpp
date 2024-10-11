@@ -36,7 +36,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QBasicTimer>
-#include <QtCore/QTime>
+#include <chrono>
 
 /*
     This class will call the save() slot on the parent object when the parent changes.
@@ -60,7 +60,7 @@ protected:
 
 private:
     QBasicTimer m_timer;
-    QTime m_firstChange;
+    std::chrono::steady_clock::time_point m_firstChange;
 
 };
 
