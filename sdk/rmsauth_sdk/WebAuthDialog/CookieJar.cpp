@@ -54,6 +54,8 @@
 #include <QtCore/QDebug>
 #include <QCoreApplication>
 
+#include "../../rms_sdk/Common/RMSDir.h"
+
 static const unsigned int JAR_VERSION = 23;
 
 QT_BEGIN_NAMESPACE
@@ -167,10 +169,12 @@ void CookieJar::save()
     purgeOldCookies();
     QString directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
     if (directory.isEmpty())
+        // todo: homePath修改為HarmonyOS
         directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
     if (!QFile::exists(directory)) {
-        QDir dir;
-        dir.mkpath(directory);
+        // QDir dir;
+        // dir.mkpath(directory);
+        rmscore::common::RMSDir::mkpath(directory.toStdString());
     }
     QSettings cookieSettings(directory + QLatin1String("/cookies.ini"), QSettings::IniFormat);
     QList<QNetworkCookie> cookies = allCookies();

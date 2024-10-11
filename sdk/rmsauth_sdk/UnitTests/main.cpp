@@ -6,7 +6,7 @@
  * ======================================================================
  */
 
-#include <QDir>
+//#include <QDir>
 #include <QApplication>
 #include <QCommandLineParser>
 #include <fstream>
@@ -14,7 +14,10 @@
 #include "NonInteractiveTests.h"
 #include "InteractiveTests.h"
 
+#include "../../rms_sdk/Common/RMSDir.h"
+
 using namespace std;
+namespace fs = std::filesystem;
 
 void addCertificates(QString path);
 
@@ -94,18 +97,21 @@ int main(int argc, char *argv[])
 }
 
 void addCertificates(QString path) {
-  QDir dir(path);
-  QStringList filters;
+  // QDir dir(path);
+  // QStringList filters;
 
-  filters << "*.cer" << "*.der" << "*.pem";
-  auto filesList = dir.entryInfoList(filters);
+  // filters << "*.cer" << "*.der" << "*.pem";
+  // auto filesList = dir.entryInfoList(filters);
+
+  std::vector<std::string> filters = {"*.cer",  "*.der", "*.pem"};
+  auto filesList = rmscore::common::RMSDir::entryInfoList(path.toStdString(), filters);
   std::vector<uint8_t> buffer;
 
   int cnt = 0;
 
   for (auto& fileName : filesList) {
     ifstream file(
-      fileName.absoluteFilePath().toStdString(),
+      fs::absolute(fileName).string(),
       ios_base::in | ios_base::binary | ios_base::ate);
 
     if (!file.is_open()) continue;

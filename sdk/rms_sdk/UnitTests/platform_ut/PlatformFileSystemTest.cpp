@@ -9,7 +9,8 @@
 #include "PlatformFileSystemTest.h"
 #include "../../Platform/Filesystem/IFileSystem.h"
 #include "../../Common/CommonTypes.h"
-#include <QDir>
+// #include <QDir>
+#include <filesystem>
 
 using namespace rmscore::platform::filesystem;
 
@@ -32,8 +33,8 @@ void PlatformFileSystemTest::testDeleteLocalStorageFile()
     QVERIFY(pf1 != nullptr);
     pf1->Close();
     fs->DeleteLocalStorageFile(path1.toStdString());
-    QDir dir;
-    QVERIFY(dir.exists(path1)==false);
+    // QDir dir;
+    QVERIFY(std::filesystem::exists(path1.toStdString())==false);
 }
 void PlatformFileSystemTest::testQueryLocalStorageFiles()
 {

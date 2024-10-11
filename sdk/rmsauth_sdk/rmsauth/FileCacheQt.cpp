@@ -10,11 +10,16 @@
 #include <FileCache.h>
 #include <Constants.h>
 #include <QFile>
-#include <QDir>
+// #include <QDir>
 #include <QFileInfo>
 #include <QStandardPaths>
+#include <filesystem>
+
+#include "../../rms_sdk/Common/RMSDir.h"
 
 using namespace std;
+
+namespace fs = std::filesystem;
 
 namespace rmsauth {
 Mutex FileCache::fileLock_;
@@ -23,28 +28,30 @@ FileCache::FileCache(const String& filePath)
 {
   if (filePath.empty()) // using default settings
   {
-    const QString fileName = "token_cache.dat";
+    const std::string fileName = "token_cache.dat";
     auto path              = QStandardPaths::writableLocation(
       QStandardPaths::HomeLocation) + "/.ms-ad";
 
-    if (!QDir().mkpath(path))
+    if (!rmscore::common::RMSDir::mkpath(path.toStdString()))
     {
       throw RmsauthException("Can't create cache directory");
     }
-    QFileInfo fi(QDir(path), fileName);
-    cacheFilePath_ = fi.absoluteFilePath().toStdString();
+    // QFileInfo fi(QDir(path), fileName);
+    // cacheFilePath_ = fi.absoluteFilePath().toStdString();
+    cacheFilePath_ = fs::absolute(fs::path(path.toStdString())/fs::path(fileName)).string();
   }
   else
   {
-    QFileInfo fi(QString::fromStdString(filePath));
-    auto userDefinedCacheDir = fi.path();
+    // QFileInfo fi(QString::fromStdString(filePath));
+    // auto userDefinedCacheDir = fi.path();
 
-    if (!QDir().exists(userDefinedCacheDir))
+    if (!fs::exists(filePath))
     {
       throw RmsauthException("Can't find user defined cache directory",
-                             userDefinedCacheDir.toStdString());
+                             filePath);
     }
-    cacheFilePath_ = fi.absoluteFilePath().toStdString();
+    // cacheFilePath_ = fi.absoluteFilePath().toStdString();
+    cacheFilePath_ = fs::absolute(fs::path(filePath)).string();
   }
 
   Logger::info(Tag(), "path: %", cacheFilePath_);

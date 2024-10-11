@@ -8,6 +8,7 @@
 
 #ifdef QTFRAMEWORK
 #include<QDir>
+#include<vector>
 #include"FileSystemQt.h"
 #include"FileQt.h"
 #include "../../Platform/Logger/Logger.h"
@@ -54,15 +55,17 @@ std::vector<std::string> FileSystemQt::QueryLocalStorageFiles(const std::string&
 {
     Logger::Info("+FileSystemQt::QueryLocalStorageFiles");
     Logger::Hidden("Looking for pattern %s in folder %s.\n", pattern.c_str(), folder.c_str());
-    QStringList filters;
-    filters << pattern.c_str();
-    QDir dir(folder.c_str());
-    dir.setNameFilters(filters);
-    std::vector<std::string> res;
-    for( QString f : dir.entryList(filters))
-    {
-        res.push_back(f.toStdString());
-    }
+    // QStringList filters;
+    // filters << pattern.c_str();
+    // QDir dir(folder.c_str());
+    // dir.setNameFilters(filters);
+    // std::vector<std::string> res;
+    // for( QString f : dir.entryList(filters))
+    // {
+    //     res.push_back(f.toStdString());
+    // }
+    std::vector<std::string> filters = { pattern.c_str() };
+    std::vector<std::string> res = common::RMSDir::entryList(folder, filters);
     Logger::Info("-FileSystemQt::QueryLocalStorageFiles");
     return res;
 }
