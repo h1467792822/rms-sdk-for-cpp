@@ -13,6 +13,7 @@
 #include "../Platform/Filesystem/IFileSystem.h"
 #include "../Platform/Settings/ILocalSettings.h"
 #include "../Common/tools.h"
+#include "../Common/FrameworkSpecificTypes.h"
 #include "../Platform/Logger/Logger.h"
 #include <sstream>
 #include <fstream>
@@ -21,6 +22,7 @@
 
 using namespace std;
 using namespace rmscore::platform::logger;
+using namespace rmscore::common;
 
 namespace rmscore {
 namespace restclients {
@@ -491,7 +493,7 @@ string RestClientCache::GetFileName(
 }
 
 // parses the expiry time from the filename
-common::DateTime RestClientCache::GetExpiryTimeFromFileName(
+DateTime RestClientCache::GetExpiryTimeFromFileName(
   const string& cacheName, const string& fileName)
 {
   size_t nFileNameLength  = fileName.length();
@@ -516,7 +518,7 @@ common::DateTime RestClientCache::GetExpiryTimeFromFileName(
 
   SELF::ReplaceBackNotAllowedCharactersInDateTime(strExpires);
 
-  return common::DateTime::fromString(strExpires.c_str(), common::ISODate);
+  return DateTime::fromString(strExpires.c_str());
 }
 
 // delete the file
@@ -548,7 +550,7 @@ bool RestClientCache::DeleteIfExpired(
 
   if (expires.isNull()) return false;
 
-  common::DateTime now = common::DateTime::currentDateTime();
+  auto now = DateTime::currentDateTime();
 
   if (now > expires)
   {

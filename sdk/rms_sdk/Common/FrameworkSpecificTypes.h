@@ -15,12 +15,13 @@
 #include <locale>
 //#include <QDataStream>
 #include "CommonTypes.h"
-#include "DateTime.h"
+#include "../../rmsutils/DateTime.h"
 //#include "DataStream.h"
 
 namespace rmscore {
 namespace common {
 //using DateTime = QDateTime;
+using DateTime = rmsutils::DateTime;
 //using Event = std::string;
 using Mutex = std::mutex;
 using MutexLocker = std::lock_guard<std::mutex>;

@@ -43,7 +43,7 @@ string timeToString(const DateTime& dateTime) {
   {
     //    return dateTime.toString("yyyy-MM-DDThh:mm:ssZ").toStdString();
     //return dateTime.toString(Qt::ISODate).toStdString();
-    return dateTime.toString(ISODate);
+    return dateTime.toString();
   }
   else
   {

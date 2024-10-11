@@ -200,7 +200,7 @@ void CookieJar::purgeOldCookies()
     if (cookies.isEmpty())
         return;
     int oldCount = cookies.count();
-    QDateTime now = QDateTime::currentDateTime();
+    auto now = QDateTime::currentDateTime();
     for (int i = cookies.count() - 1; i >= 0; --i) {
         if (!cookies.at(i).isSessionCookie() && cookies.at(i).expirationDate() < now)
             cookies.removeAt(i);
@@ -246,7 +246,7 @@ bool CookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const
     if ((acceptInitially && !eBlock)
         || (!acceptInitially && (eAllow || eAllowSession))) {
         // pass url domain == cookie domain
-        QDateTime soon = QDateTime::currentDateTime();
+        auto soon = QDateTime::currentDateTime();
         soon = soon.addDays(90);
         foreach(QNetworkCookie cookie, cookieList) {
             QList<QNetworkCookie> lst;

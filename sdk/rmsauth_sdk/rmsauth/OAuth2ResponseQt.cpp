@@ -15,7 +15,7 @@
 #include <utils.h>
 #include <Logger.h>
 #include "JsonUtilsQt.h"
-#include <QDateTime>
+#include "../../rmsutils/DateTime.h"
 #include <QByteArray>
 #include <QJsonObject>
 #include <QJsonDocument>
@@ -31,13 +31,13 @@ AuthenticationResultPtr OAuth2Response::parseTokenResponse(TokenResponsePtr toke
 
     if (!tokenResponse->accessToken.empty())
     {
-        auto curTimeUts = QDateTime::currentDateTimeUtc();
-        Logger::info(Tag(), "curTimeUTC: %; expiresIn: %", curTimeUts.toString("HH:mm:ss MM.dd.yy").toStdString(), tokenResponse->expiresIn);
+        auto curTimeUts = rmsutils::DateTime::currentDateTimeUtc();
+        Logger::info(Tag(), "curTimeUTC: %; expiresIn: %", curTimeUts.toString("HH:mm:ss MM.dd.yy"), tokenResponse->expiresIn);
 
         auto expiresUtc = curTimeUts.addSecs(tokenResponse->expiresIn);
         DateTimeOffset expiresOn = expiresUtc.toTime_t();
 
-        Logger::info(Tag(), "tonken expiresOn: % (%)", expiresUtc.toString("HH:mm:ss MM.dd.yy").toStdString(), expiresOn);
+        Logger::info(Tag(), "tonken expiresOn: % (%)", expiresUtc.toString("HH:mm:ss MM.dd.yy"), expiresOn);
 
         result = std::make_shared<AuthenticationResult>(tokenResponse->tokenType, tokenResponse->accessToken, tokenResponse->refreshToken, expiresOn);
         // This is only needed for AcquireTokenByAuthorizationCode in which parameter resource is optional and we need
@@ -76,7 +76,7 @@ AuthenticationResultPtr OAuth2Response::parseTokenResponse(TokenResponsePtr toke
             DateTimeOffset passwordExpiresOn = 0;
             if (idToken->passwordExpiration > 0)
             {
-                passwordExpiresOn = QDateTime::currentDateTimeUtc().addSecs(idToken->passwordExpiration).toTime_t();
+                passwordExpiresOn = rmsutils::DateTime::currentDateTimeUtc().addSecs(idToken->passwordExpiration).toTime_t();
             }
 
             String changePasswordUri;

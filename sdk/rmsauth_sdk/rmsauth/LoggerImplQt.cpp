@@ -7,15 +7,15 @@
 */
 
 #include <Logger.h>
-#include <QDateTime>
+#include "../../rmsutils/DateTime.h"
 #include <QProcessEnvironment>
 
 namespace rmsauth {
 
 String LoggerImpl::getLocalTime(const String& format)
 {
-    auto now = QDateTime::currentDateTime();
-    return std::move(now.toString(QString::fromStdString(format)).toStdString());
+    auto now = rmsutils::DateTime::currentDateTime();
+    return std::move(now.toString(format.c_str()));
 }
 
 void Logger::hidden(const String& tag, const String& record)

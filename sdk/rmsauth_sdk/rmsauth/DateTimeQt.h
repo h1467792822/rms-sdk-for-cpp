@@ -10,7 +10,7 @@
 #define DATEQT_H
 
 #include <DateTime.h>
-#include <QDateTime>
+#include <../../rmsutils/DateTime.h>
 
 namespace rmsauth {
 
@@ -30,7 +30,7 @@ private:
     virtual String toString(const String& format) override;
 
 private:
-    QDateTime dateTime_;
+    rmsutils::DateTime dateTime_;
     friend class DateTime;
 };
 
