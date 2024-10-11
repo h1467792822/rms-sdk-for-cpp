@@ -9,9 +9,12 @@ namespace common {
 
 class RMSDir {
 public:
+    RMSDir() {}
+
+public:
     static bool mkpath(const std::string& path) {
         std::filesystem::path dir(path);
-        if (std::filesystem::create_directory(dir)) {
+        if (std::filesystem::create_directories(dir)) {
             return true;
         } else {
             return false;
