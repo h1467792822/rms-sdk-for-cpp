@@ -3,7 +3,7 @@ DESTDIR   = $$REPO_ROOT/bin/rms
 TARGET    = modcore
 
 TEMPLATE = lib
-CONFIG  += staticlib warn_on C++17 debug_and_release
+CONFIG  += staticlib warn_on c++17 debug_and_release
 QT      += core
 QT      -= gui
 

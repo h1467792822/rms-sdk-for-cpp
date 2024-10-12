@@ -6,7 +6,7 @@ TARGET    = modcommon
 TEMPLATE  = lib
 QT       += core
 
-CONFIG   += staticlib warn_on C++17 debug_and_release
+CONFIG   += staticlib warn_on c++17 debug_and_release
 
 CONFIG(debug, debug|release) {
     TARGET = $$join(TARGET,,,d)

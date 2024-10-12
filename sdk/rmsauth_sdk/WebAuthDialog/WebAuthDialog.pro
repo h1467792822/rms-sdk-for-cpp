@@ -8,7 +8,7 @@ TEMPLATE  = lib
 
 DEFINES  += RMSAUTH_WEB_AUTH_DIALOG_LIBRARY
 
-CONFIG   += plugin C++17 debug_and_release warn_on
+CONFIG   += plugin c++17 debug_and_release warn_on
 
 INCLUDEPATH = ../rmsauth/rmsauth
 

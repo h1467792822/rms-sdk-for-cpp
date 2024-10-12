@@ -5,7 +5,7 @@ TARGET    = rmsauthUnitTests
 QT       += core testlib widgets
 
 CONFIG   -= app_bundle
-CONFIG   += console C++17 debug_and_release warn_on
+CONFIG   += console c++17 debug_and_release warn_on
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 DEFINES += Q_COMPILER_INITIALIZER_LISTS

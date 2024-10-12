@@ -7,7 +7,7 @@ TEMPLATE = app
 QT       += core testlib widgets
 
 CONFIG   -= app_bundle
-CONFIG   += console C++17 debug_and_release warn_on
+CONFIG   += console c++17 debug_and_release warn_on
 
 INCLUDEPATH           += $$REPO_ROOT/sdk/rmscrypto_sdk/CryptoAPI
 win32:INCLUDEPATH     += $$REPO_ROOT/third_party/include

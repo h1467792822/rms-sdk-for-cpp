@@ -4,7 +4,7 @@ TARGET    = modcrypto
 
 QT       -= gui
 TEMPLATE  = lib
-CONFIG   += staticlib warn_on C++17 debug_and_release
+CONFIG   += staticlib warn_on c++17 debug_and_release
 QT       += core
 
 win32:INCLUDEPATH += $$REPO_ROOT/third_party/include

@@ -16,7 +16,7 @@ TEMPLATE = lib
 DEFINES += RMSAUTH_LIBRARY
 
 QT     += core widgets network
-CONFIG += plugin C++17 debug_and_release warn_on
+CONFIG += plugin c++17 debug_and_release warn_on
 
 CONFIG(debug, debug|release) {
     TARGET = $$join(TARGET,,,d)

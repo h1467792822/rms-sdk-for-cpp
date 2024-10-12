@@ -6,7 +6,7 @@ QT       += xml xmlpatterns
 QT       -= gui
 
 TEMPLATE = lib
-CONFIG += staticlib C++17 debug_and_release
+CONFIG += staticlib c++17 debug_and_release
 
 DEFINES += QTFRAMEWORK
 
