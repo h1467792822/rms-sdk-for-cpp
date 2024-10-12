@@ -35,7 +35,7 @@ std::shared_ptr<IFile> FileSystemQt::OpenProtectedLocalStorageFile(const std::st
 
 void FileSystemQt::DeleteLocalStorageFile(const std::string& filePath)
 {
-    bool ok = QFile::remove(filePath.c_str());
+    bool ok = std::filesystem::remove(filePath.c_str());
     if(!ok)
     {
         Logger::Hidden("Failed to delete a file: %s", filePath.c_str());
@@ -44,7 +44,7 @@ void FileSystemQt::DeleteLocalStorageFile(const std::string& filePath)
 
 void IFileSystem::CreateDirectory(const std::string& dirPath) {
     auto directory = QString::fromStdString(dirPath);
-    if (!QFile::exists(directory)) {
+    if (!std::filesystem::exists(directory.toStdString())) {
       // QDir dir;
       // dir.mkpath(directory);
       common::RMSDir::mkpath(dirPath);

@@ -9,7 +9,7 @@
 #include <Logger.h>
 #include <FileCache.h>
 #include <Constants.h>
-#include <QFile>
+#include <filesystem>
 // #include <QDir>
 #include <QFileInfo>
 #include <QStandardPaths>
@@ -98,7 +98,7 @@ void FileCache::clear()
   Logger::info(Tag(), "clear");
   TokenCache::clear();
   Lock l(fileLock_);
-  bool ok = QFile::remove(cacheFilePath_.c_str());
+  bool ok = filesystem::remove(cacheFilePath_.c_str());
 
   if (!ok)
   {

@@ -8,7 +8,7 @@
 
 #include "LicenseParserTest.h"
 
-#include <QFile>
+#include <filesystem>
 #include <sstream>
 #include <stdint.h>
 

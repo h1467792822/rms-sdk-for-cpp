@@ -11,7 +11,10 @@
 #include "../../Platform/Xml/IDomDocument.h"
 #include "../../Platform/Xml/IDomNode.h"
 #include "../../Platform/Xml/IDomElement.h"
+#include <filesystem>
+#include <fstream>
 
+using namespace std;
 using namespace rmscore::platform::logger;
 
 
@@ -23,23 +26,25 @@ void PlatformXmlTest::testSelectSingleNode_data()
     QTest::addColumn<QString>("xmlAsString");
     QTest::addColumn<QString>("xPathRequest");
     QTest::addColumn<QString>("expectedResult");
-
-    QString path1 = QString(SRCDIR) + "data/testXPath1.xml";
-    QFile file1(path1);
-    QVERIFY(file1.open(QIODevice::ReadOnly | QIODevice::Text));
+     
+    string path1 = string(SRCDIR) + "data/testXPath1.xml";
+    ifstream file1(path1, ios::in | ios::binary);
+    QVERIFY(file1.is_open());
     QTest::newRow("xpath1")
-        << QString(file1.readAll())
+        << QString::fromStdString(string((istreambuf_iterator<char>(file1)), istreambuf_iterator<char>()))
         << "kml/Document/Placemark[last()]/GeometryCollection/LineString/coordinates"
         << "0.000010,0.000020,0.000030";
+    file1.close();
 
-    QString path2 = QString(SRCDIR) + "data/testXPath2.xml";
-    QFile file2(path2);
-    QVERIFY(file2.open(QIODevice::ReadOnly | QIODevice::Text));
-    auto file2AsString = QString(file2.readAll());
+    string path2 = string(SRCDIR) + "data/testXPath2.xml";
+    ifstream file2(path2, ios::in | ios::binary);
+    QVERIFY(file2.is_open());
+    auto file2AsString = QString::fromStdString(string((istreambuf_iterator<char>(file2)), istreambuf_iterator<char>()));
     QTest::newRow("xpath2")
         << file2AsString
         << "bookstore/book/author[last-name = \"Bob\" and first-name = \"Joe\"]/award"
         << "Trenton Literary Review Honorable Mention";
+    file2.close();
 }
 void PlatformXmlTest::testSelectSingleNode(bool enabled)
 {

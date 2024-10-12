@@ -12,7 +12,9 @@
 #include "../../Platform/Json/IJsonObject.h"
 #include "../../Platform/Json/IJsonArray.h"
 #include "../../ModernAPI/RMSExceptions.h"
+#include <fstream>
 
+using namespace std;
 using namespace rmscore::platform::json;
 using namespace rmscore::platform::logger;
 using namespace rmscore;
@@ -29,11 +31,11 @@ void PlatformJsonObjectTest::testGetNamedString_data()
   QTest::addColumn<QString>("name");
   QTest::addColumn<QString>("expectedValue");
 
-  QString path1 = QString(SRCDIR) + "data/testJson1.json";
-  QFile   file1(path1);
-
-  QVERIFY(file1.open(QIODevice::ReadOnly | QIODevice::Text));
-  auto jsonAsString1 = QString(file1.readAll());
+  string path1 = string(SRCDIR) + "data/testJson1.json";
+  ifstream file1(path1, ios::in | ios::binary);
+  QVERIFY(file1.is_open());
+  auto jsonAsString1 = QString::fromStdString(string((istreambuf_iterator<char>(file1)), istreambuf_iterator<char>()));
+  file1.close();
 
   QTest::newRow("encoding")
     << jsonAsString1
@@ -94,11 +96,11 @@ void PlatformJsonObjectTest::testGetNamedBool_data()
   QTest::addColumn<QString>("name");
   QTest::addColumn<bool>(   "expectedValue");
 
-  QString path1 = QString(SRCDIR) + "data/testJson1.json";
-  QFile   file1(path1);
-
-  QVERIFY(file1.open(QIODevice::ReadOnly | QIODevice::Text));
-  auto jsonAsString1 = QString(file1.readAll());
+  string path1 = string(SRCDIR) + "data/testJson1.json";
+  ifstream file1(path1, ios::in | ios::binary);
+  QVERIFY(file1.is_open());
+  auto jsonAsString1 = QString::fromStdString(string((istreambuf_iterator<char>(file1)), istreambuf_iterator<char>()));
+  file1.close();
 
   QTest::newRow("encoding")
     << jsonAsString1
@@ -157,11 +159,11 @@ void PlatformJsonObjectTest::testGetNamedObject_data()
   QTest::addColumn<QString>("name");
   QTest::addColumn<bool>(   "expectedExsists");
 
-  QString path1 = QString(SRCDIR) + "data/testJson1.json";
-  QFile   file1(path1);
-
-  QVERIFY(file1.open(QIODevice::ReadOnly | QIODevice::Text));
-  auto jsonAsString1 = QString(file1.readAll());
+  string path1 = string(SRCDIR) + "data/testJson1.json";
+  ifstream file1(path1, ios::in | ios::binary);
+  QVERIFY(file1.is_open());
+  auto jsonAsString1 = QString::fromStdString(string((istreambuf_iterator<char>(file1)), istreambuf_iterator<char>()));
+  file1.close();
 
   QTest::newRow("exists")
     << jsonAsString1
@@ -216,11 +218,11 @@ void PlatformJsonObjectTest::testStringify_data()
 {
   QTest::addColumn<QString>("jsonAsString");
 
-  QString path1 = QString(SRCDIR) + "data/testJson1.json";
-  QFile   file1(path1);
-
-  QVERIFY(file1.open(QIODevice::ReadOnly | QIODevice::Text));
-  auto jsonAsString1 = QString(file1.readAll());
+  string path1 = string(SRCDIR) + "data/testJson1.json";
+  ifstream file1(path1, ios::in | ios::binary);
+  QVERIFY(file1.is_open());
+  auto jsonAsString1 = QString::fromStdString(string((istreambuf_iterator<char>(file1)), istreambuf_iterator<char>()));
+  file1.close();
 
   QTest::newRow("root obj")
     << jsonAsString1;

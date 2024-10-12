@@ -9,7 +9,6 @@
 #ifndef FILEQT
 #define FILEQT
 #include "IFile.h"
-//#include <QFile>
 #include <cstdio>
 #include <string>
 #include "../../ModernAPI/RMSExceptions.h"
@@ -36,7 +35,6 @@ private:
   FILE* file = nullptr;
   const std::string path;
   FileOpenModes mode;
-  //QFile impl_;
 
   //static QIODevice::OpenModeFlag toQtMode(FileOpenModes mode)
   static const char* toMode(FileOpenModes mode, bool trunc = false)

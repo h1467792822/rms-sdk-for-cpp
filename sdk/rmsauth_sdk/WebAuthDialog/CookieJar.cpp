@@ -37,7 +37,8 @@
 
 #include <QtCore/QDateTime>
 #include <QtCore/QDir>
-#include <QtCore/QFile>
+#include <QtCore>
+#include <filesystem>
 #include <QtCore/QMetaEnum>
 #include <QtCore/QSettings>
 #include <QtCore/QUrl>
@@ -171,7 +172,7 @@ void CookieJar::save()
     if (directory.isEmpty())
         // todo: homePath修改為HarmonyOS
         directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
-    if (!QFile::exists(directory)) {
+    if (!std::filesystem::exists(directory.toStdString())) {
         // QDir dir;
         // dir.mkpath(directory);
         rmscore::common::RMSDir::mkpath(directory.toStdString());

@@ -6,7 +6,7 @@
  * ======================================================================
  */
 
-#include <QFile>
+#include <filesystem>
 #include <vector>
 #include <CryptoAPI.h>
 #include <BlockBasedProtectedStream.h>

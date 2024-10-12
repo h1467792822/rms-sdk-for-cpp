@@ -30,7 +30,7 @@ shared_ptr<IFile>IFile::Create(const string& path, FileOpenModes mode)
   if ((idx > 0) && (idx < directory.size())) {
     directory.resize(idx + 1);
 
-    if (!QFile::exists(directory)) {
+    if (!std::filesystem::exists(directory)) {
       QDir dir;
       dir.mkpath(directory);
     }
