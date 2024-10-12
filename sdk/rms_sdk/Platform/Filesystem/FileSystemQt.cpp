@@ -12,7 +12,7 @@
 #include"FileSystemQt.h"
 #include"FileQt.h"
 #include "../../Platform/Logger/Logger.h"
-#include "../../Common/RMSDir.h"
+#include "../../rmsutils/RMSDir.h"
 
 using namespace rmscore::platform::logger;
 

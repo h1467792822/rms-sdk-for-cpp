@@ -54,7 +54,7 @@
 #include <QtCore/QDebug>
 #include <QCoreApplication>
 
-#include "../../rms_sdk/Common/RMSDir.h"
+#include "../../rmsutils/RMSDir.h"
 
 static const unsigned int JAR_VERSION = 23;
 

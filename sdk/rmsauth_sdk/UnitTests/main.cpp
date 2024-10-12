@@ -14,7 +14,7 @@
 #include "NonInteractiveTests.h"
 #include "InteractiveTests.h"
 
-#include "../../rms_sdk/Common/RMSDir.h"
+#include "../../rmsutils/RMSDir.h"
 
 using namespace std;
 namespace fs = std::filesystem;

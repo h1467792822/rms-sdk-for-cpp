@@ -15,7 +15,7 @@
 #include <QStandardPaths>
 #include <filesystem>
 
-#include "../../rms_sdk/Common/RMSDir.h"
+#include "../../rmsutils/RMSDir.h"
 
 using namespace std;
 

@@ -33,7 +33,7 @@
 
 #include "Autosaver.h"
 
-#include <QtCore/QDir>
+// #include <QtCore/QDir>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
 #include <QtDebug>
