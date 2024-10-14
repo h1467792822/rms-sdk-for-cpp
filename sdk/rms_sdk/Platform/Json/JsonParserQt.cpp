@@ -25,13 +25,15 @@ std::shared_ptr<IJsonParser>IJsonParser::Create()
 std::shared_ptr<IJsonObject>JsonParserQt::Parse(
   const common::ByteArray& jsonObject)
 {
-  if (!nlohmann::json::accept(jsonObject))
+  nlohmann::json val;
+  try {
+      val = nlohmann::json::parse(jsonObject);
+  }
+  catch(std::exception& e)
   {
-    Logger::Error("JsonParserQt::Parse: %s", "given json is invalid format");
+    Logger::Error("JsonParserQt::Parse: %s", e.what());
     return nullptr;
   }
-
-  auto val = nlohmann::json::parse(jsonObject);
 
   if (!val.is_object())
   {
@@ -44,13 +46,15 @@ std::shared_ptr<IJsonObject>JsonParserQt::Parse(
 std::shared_ptr<IJsonArray>JsonParserQt::ParseArray(
   const common::ByteArray& jsonArray)
 {
-  if (!nlohmann::json::accept(jsonArray))
+  nlohmann::json val;
+  try {
+      val = nlohmann::json::parse(jsonArray);
+  }
+  catch(std::exception& e)
   {
-    Logger::Error("JsonParserQt::Parse: %s", "given json is invalid format");
+    Logger::Error("JsonParserQt::ParseArray: %s", e.what());
     return nullptr;
   }
-
-  auto val = nlohmann::json::parse(jsonArray);
 
   if (!val.is_array())
   {
