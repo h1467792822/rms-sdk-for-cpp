@@ -9,69 +9,68 @@
 #include "JsonUtilsQt.h"
 #include <Exceptions.h>
 #include <Logger.h>
-#include <QJsonValue>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QJsonDocument>
+#include <cstdlib>
+#include <exception>
 
 namespace rmsauth {
 
-String JsonUtilsQt::getStringOrDefault(const QJsonObject& qobj, const String& key, const String defval)
+String JsonUtilsQt::getStringOrDefault(const nlohmann::json& qobj, const String& key, const String defval)
 {
-    if (qobj.contains(key.data()))
+    if (qobj.contains(key))
     {
-        auto res = qobj.value(key.data());
-        if(!res.isString())
+        auto res = qobj[key];
+        if(!res.is_string())
         {
             Logger::error(Tag(), "getStringOrDefault: The value for the key '%' is not a string", key);
             throw RmsauthJsonParsingException("JsonUtilsQt::getStringOrDefault", "value is not a string");
         }
 
-        return res.toString().toStdString();
+        return res.template get<std::string>();
     }
     return defval;
 }
 
-int JsonUtilsQt::getIntOrDefault(const QJsonObject& qobj, const String& key, int defval)
+int JsonUtilsQt::getIntOrDefault(const nlohmann::json& qobj, const String& key, int defval)
 {
-    if (qobj.contains(key.data()))
+    if (qobj.contains(key))
     {
-        auto res = qobj.value(key.data());
-        if(!res.isDouble())
+        auto res = qobj[key];
+        if(!res.is_number())
         {
             Logger::error(Tag(), "getIntOrDefault: The value for the key '%' is not int", key);
             throw RmsauthJsonParsingException("JsonUtilsQt::getIntOrDefault", "value is not int");
         }
 
-        return res.toInt();
+        return res.template get<int>();
     }
     return defval;
 }
 
-int JsonUtilsQt::getStringAsIntOrDefault(const QJsonObject& qobj, const String& key, int defval)
+int JsonUtilsQt::getStringAsIntOrDefault(const nlohmann::json& qobj, const String& key, int defval)
 {
-    if (qobj.contains(key.data()))
+    if (qobj.contains(key))
     {
-        auto res = qobj.value(key.data());
+        auto res = qobj[key];
 
-        if(res.isDouble())
+        if(res.is_number())
         {
-            return res.toDouble(defval);
+            return res.template get<int>();
         }
 
-        if(!res.isString())
+        if(!res.is_string())
         {
             Logger::error(Tag(), "getStringAsIntOrDefault: The value for the key '%' is not a string", key);
             throw RmsauthJsonParsingException("JsonUtilsQt::getStringAsIntOrDefault", "value is not a string");
         }
 
-        auto strRes = res.toString();
-        bool ok;
-        auto intRes = strRes.toInt(&ok);
+        auto strRes = res.template get<std::string>();
 
-        if(!ok)
+	char* endptr = "";
+	auto intRes = strtol(strRes.c_str(), &endptr, 10);
+
+        if(strRes.empty() || *endptr != 0)
         {
-            Logger::error(Tag(), "The value '%' for the key '%' can't be converted to int", strRes.toStdString(), key);
+            Logger::error(Tag(), "The value '%' for the key '%' can't be converted to int", strRes, key);
             throw RmsauthJsonParsingException("JsonUtilsQt::getStringAsIntOrZero", "value can't be converted to int");
         }
 
@@ -80,37 +79,37 @@ int JsonUtilsQt::getStringAsIntOrDefault(const QJsonObject& qobj, const String& 
     return defval;
 }
 
-bool JsonUtilsQt::getBoolOrDefault(const QJsonObject& qobj, const String& key, bool defval)
+bool JsonUtilsQt::getBoolOrDefault(const nlohmann::json& qobj, const String& key, bool defval)
 {
-    if (qobj.contains(key.data()))
+    if (qobj.contains(key))
     {
-        auto res = qobj.value(key.data());
-        if(!res.isBool())
+        auto res = qobj[key];
+        if(!res.is_boolean())
         {
             Logger::error(Tag(), "getBoolOrDefault: The value for the key '%' is not bool", key);
             throw RmsauthJsonParsingException("JsonUtilsQt::getBoolOrDefault", "value is not bool");
         }
 
-        return res.toBool();
+        return res.template get<bool>();
     }
 
     return defval;
 }
 
-IntArray JsonUtilsQt::getIntArrayOrEmpty(const QJsonObject& qobj, const String& key)
+IntArray JsonUtilsQt::getIntArrayOrEmpty(const nlohmann::json& qobj, const String& key)
 {
     IntArray sa;
-    if (qobj.contains(key.data()))
+    if (qobj.contains(key))
     {
-        QJsonValue val =  qobj.value(key.data());
-        if(val.isArray())
+        auto val =  qobj[key];
+        if(val.is_array())
         {
-            QJsonArray arr = val.toArray();
-            for( QJsonValue elem : arr)
+            for( size_t i = 0; i < val.size(); ++i)
             {
-                if(elem.isDouble())
+		auto elem = val[i];
+                if(elem.is_number())
                 {
-                    sa.push_back( elem.toInt());
+                    sa.push_back( elem.template get<int>());
                 }
                 else
                 {
@@ -120,7 +119,7 @@ IntArray JsonUtilsQt::getIntArrayOrEmpty(const QJsonObject& qobj, const String& 
                 }
             }
         }
-        else if(val.isNull())
+        else if(val.is_null())
         {
             return std::move(sa);
         }
@@ -134,21 +133,20 @@ IntArray JsonUtilsQt::getIntArrayOrEmpty(const QJsonObject& qobj, const String& 
     return std::move(sa);
 }
 
-void JsonUtilsQt::insertObject(QJsonObject& qobj, const String& key, const String& jsonString)
+void JsonUtilsQt::insertObject(nlohmann::json& qobj, const String& key, const String& jsonString)
 {
-    QJsonParseError error;
-    auto qdoc = QJsonDocument::fromJson(jsonString.data(), &error);
-    if( error.error != QJsonParseError::NoError )
+    try {
+        auto jobj = nlohmann::json::parse(jsonString);
+	qobj[key] = jobj;
+    }catch(std::exception& e)
     {
-        throw RmsauthException(String("AuthenticationResult::deserialize: ") + error.errorString().toStdString());
+        throw RmsauthException(String("AuthenticationResult::deserialize: ") + e.what());
     }
-    QJsonObject qobjToInsert  = qdoc.object();
-    qobj.insert(key.data(), qobjToInsert);
 }
 
-void JsonUtilsQt::insertString(QJsonObject& qobj, const String& key, const String& str)
+void JsonUtilsQt::insertString(nlohmann::json& qobj, const String& key, const String& str)
 {
-   qobj.insert(QString::fromStdString(key), QString::fromStdString(str));
+   qobj[key] = str;
 }
 
 } // namespace rmsauth {

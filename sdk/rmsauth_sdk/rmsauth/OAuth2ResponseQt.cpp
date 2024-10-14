@@ -17,10 +17,9 @@
 #include "JsonUtilsQt.h"
 #include "../../rmsutils/DateTime.h"
 #include <QByteArray>
-#include <QJsonObject>
-#include <QJsonDocument>
 #include <QUrl>
 #include <QUrlQuery>
+#include <nlohmann/json.hpp>
 
 namespace rmsauth {
 
@@ -129,14 +128,15 @@ IdTokenPtr OAuth2Response::parseIdToken(const String& idToken)
         ba.append(idTokenSegments[1].data());
         String jsonString = QByteArray::fromBase64(ba).data();
 
-        QJsonParseError error;
-        auto qdoc = QJsonDocument::fromJson(jsonString.data(), &error);
-        if( error.error != QJsonParseError::NoError )
+	nlohmann::json qobj;
+	try {
+	    qobj = nlohmann::json::parse(jsonString);
+	}
+	catch(std::exception& e)
         {
-            throw RmsauthException(String("deserializeTokenResponse: ") + error.errorString().toStdString());
+            throw RmsauthException(String("deserializeTokenResponse: ") + e.what());
         }
 
-        QJsonObject qobj = qdoc.object();
         parseResult.reset(new IdToken());
 
         parseResult->objectId              = JsonUtilsQt::getStringOrDefault(qobj, IdToken::jsonNames().objectId);

@@ -6,10 +6,10 @@
  * ======================================================================
 */
 
-#ifdef QTFRAMEWORK
+//#ifdef QTFRAMEWORK
 #include "JsonArrayQt.h"
 #include "JsonObjectQt.h"
-#include <QJsonDocument>
+//#include <QJsonDocument>
 
 namespace rmscore { namespace platform { namespace json {
 
@@ -25,43 +25,39 @@ uint32_t JsonArrayQt::Size()
 
 const std::string JsonArrayQt::GetStringAt(uint32_t index)
 {
-    QJsonValue val = this->impl_[index];
-    return val.toString().toStdString();
+    const nlohmann::json& val = this->impl_[index];
+    return val.is_string() ? val.template get<std::string>() : "";
 }
 
 std::shared_ptr<IJsonObject> JsonArrayQt::GetObjectAt(uint32_t index)
 {
-    QJsonValue val = this->impl_[index];
+    const nlohmann::json& val = this->impl_[index];
     return std::make_shared<JsonObjectQt>(val);
 }
 
 void JsonArrayQt::Clear()
 {
-    QJsonArray::iterator it = this->impl_.begin();
-    while(it != this->impl_.end())
-        it = this->impl_.erase(it);
+    impl_.clear();
 }
 
 void JsonArrayQt::Append(const IJsonObject& jsonObject)
 {
-    auto joi = static_cast<const JsonObjectQt&>(jsonObject);
-    this->impl_.append(joi.impl());
+    auto jo = static_cast<const JsonObjectQt&>(jsonObject);
+    impl_.push_back(jo.impl());
 }
 
 void JsonArrayQt::Append(const std::string& name)
 {
-    QJsonValue val(QString::fromStdString(name));
-    this->impl_.append(val);
+    nlohmann::json json = name;
+    impl_.push_back(json);
 }
 
 common::ByteArray JsonArrayQt::Stringify()
 {
-    QJsonDocument doc(this->impl_);
-    auto res = doc.toJson(QJsonDocument::Compact);
+    auto res = impl_.dump();
     return common::ByteArray(res.begin(), res.end());
 
 }
 
 }}} // namespace rmscore { namespace platform { namespace json {
-#endif
 

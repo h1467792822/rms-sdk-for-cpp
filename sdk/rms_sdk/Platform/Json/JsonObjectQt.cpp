@@ -6,12 +6,6 @@
  * ======================================================================
  */
 
-#ifdef QTFRAMEWORK
-#include <QVariantMap>
-//#include <QMap>
-#include <QJsonObject>
-#include <QJsonDocument>
-
 #include "JsonObjectQt.h"
 #include "JsonArrayQt.h"
 #include "JsonParserQt.h"
@@ -31,125 +25,101 @@ std::shared_ptr<IJsonObject>IJsonObject::Create()
 
 bool JsonObjectQt::IsNull(const std::string& name)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  return jo.contains(name.c_str())
-         ? jo[name.c_str()].isNull()
+  return impl_.contains(name) ? impl_[name].is_null()
          : throw exceptions::RMSInvalidArgumentException(
                  "JsonObjectQt::IsNull: Name doesn't exist");
 }
 
 std::shared_ptr<IJsonArray>JsonObjectQt::GetArray()
 {
-  if (!this->impl_.isArray())
+  if (!this->impl_.is_array())
   {
     throw exceptions::RMSInvalidArgumentException(
             "JsonObjectQt::GetArray: The object is not an array");
   }
-
-  QJsonArray arr = this->impl_.toArray();
-
-  return std::shared_ptr<IJsonArray>(new JsonArrayQt(arr));
+  return std::shared_ptr<IJsonArray>(impl_);
 }
 
 bool JsonObjectQt::HasName(const std::string& name)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  return jo.contains(name.c_str());
+  return impl_.contains(name);
 }
 
 std::string JsonObjectQt::GetNamedString(const std::string& name,
                                          const std::string& defaultValue)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  if (jo.contains(name.c_str()) && !jo[name.c_str()].isNull()) {
-    auto obj = jo[name.c_str()];
-
-    if (obj.isString()) {
-      return obj.toString().toStdString();
-    }
-
-    throw exceptions::RMSInvalidArgumentException(
-            "JsonObjectQt::GetNamedString: convertion error");
+  if (!impl_.contains(name)) {
+     return defaultValue;
   }
-  return defaultValue;
+  auto val = impl_[name];
+  if (val.is_null()) {
+     return defaultValue;
+  }
+  if (val.is_string()) {
+     return val.template get<std::string>();
+  }
+
+  throw exceptions::RMSInvalidArgumentException(
+            "JsonObjectQt::GetNamedString: convertion error");
 }
 
 void JsonObjectQt::SetNamedString(const std::string& name,
                                   const std::string& value)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  jo.insert(name.c_str(), QJsonValue(QString::fromStdString(value)));
-  this->impl_ = QJsonValue(jo);
+  impl_[name] = value;
 }
 
 bool JsonObjectQt::GetNamedBool(const std::string& name, bool bDefaultValue)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  if (jo.contains(name.c_str()) && !jo[name.c_str()].isNull()) {
-    auto obj = jo[name.c_str()];
-
-    if (obj.isBool()) {
-      return obj.toBool();
-    }
+  if (!impl_.contains(name)) {
+     return bDefaultValue;
+  }
+  auto val = impl_[name];
+  if (val.is_null()) {
+     return bDefaultValue;
+  }
+  if (val.is_boolean()) {
+     return val.template get<bool>();
+  }
 
     throw exceptions::RMSInvalidArgumentException(
             "JsonObjectQt::GetNamedBool: convertion error");
-  }
-  return bDefaultValue;
 }
 
 void JsonObjectQt::SetNamedBool(const std::string& name, bool bValue)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  jo.insert(name.c_str(), bValue);
-  this->impl_ = QJsonValue(jo);
+  impl_[name] = bValue;
 }
 
 double JsonObjectQt::GetNamedNumber(const std::string& name, double fDefaultValue)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  if (jo.contains(name.c_str())) {
-    auto joVal = jo[name.c_str()];
-
-    if (!joVal.isNull()) {
-      if (jo[name.c_str()].isDouble()) {
-        return jo[name.c_str()].toDouble();
-      } else {
-        throw exceptions::RMSInvalidArgumentException(
-                "JsonObjectQt::GetNamedNumber: convertion error");
-      }
-    }
+  if (!impl_.contains(name)) {
+     return fDefaultValue;
   }
-  return fDefaultValue;
+  auto val = impl_[name];
+  if (val.is_null()) {
+     return fDefaultValue;
+  }
+  if (val.is_number()) {
+     return val.template get<double>();
+  }
+
+  throw exceptions::RMSInvalidArgumentException(
+        "JsonObjectQt::GetNamedNumber: convertion error");
 }
 
 void JsonObjectQt::SetNamedNumber(const std::string& name, double fValue)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  jo.insert(name.c_str(), fValue);
-  this->impl_ = QJsonValue(jo);
+  impl_[name] = fValue;
 }
 
 std::shared_ptr<IJsonObject>JsonObjectQt::GetNamedObject(const std::string& name)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  if (!jo.contains(name.c_str()))
-  {
-    return nullptr;
+  if (!impl_.contains(name)) {
+     return nullptr;
   }
-
-  QJsonValue val = jo.value(name.data());
-
-  if (!val.isObject())
+  auto val = impl_[name];
+  if (!val.is_object())
   {
     throw exceptions::RMSInvalidArgumentException(
             "JsonObjectQt::GetNamedObject: convertion error");
@@ -161,72 +131,54 @@ std::shared_ptr<IJsonObject>JsonObjectQt::GetNamedObject(const std::string& name
 void JsonObjectQt::SetNamedObject(const std::string& name,
                                   const IJsonObject& jsonObject)
 {
-  QJsonObject jo = this->impl_.toObject();
-  auto other     = static_cast<const JsonObjectQt&>(jsonObject);
-
-  jo.insert(name.c_str(), other.impl());
-  this->impl_ = QJsonValue(jo);
+  auto jo = static_cast<const JsonObjectQt&>(jsonObject);
+  impl_[name] = jo.impl();
 }
 
 std::shared_ptr<IJsonArray>JsonObjectQt::GetNamedArray(const std::string& name)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  if (!jo.contains(name.c_str()))
-  {
-    return nullptr;
+  if (!impl_.contains(name)) {
+     return nullptr;
   }
-
-  QJsonValue val = jo.value(name.data());
-
-  if (!val.isArray())
+  auto val = impl_[name];
+  if (!val.is_array())
   {
     throw exceptions::RMSInvalidArgumentException("the value is not an array");
   }
 
-  return std::shared_ptr<JsonArrayQt>(new JsonArrayQt(val.toArray()));
+  return std::make_shared<JsonArrayQt>(val);
 }
 
 void JsonObjectQt::SetNamedArray(const std::string& name,
                                  const IJsonArray & jsonArray)
 {
-  QJsonObject jo = this->impl_.toObject();
-  auto other     = static_cast<const JsonArrayQt&>(jsonArray);
-
-  jo.insert(name.c_str(), QJsonValue(other.impl()));
-  this->impl_ = QJsonValue(jo);
+  auto jo = static_cast<const JsonArrayQt&>(jsonArray);
+  impl_[name] = jo.impl();
 }
 
 void JsonObjectQt::SetNamedValue(const std::string      & name,
                                  const common::ByteArray& value) {
-  QJsonObject jo = this->impl_.toObject();
-
-  QVariant jsonVar(QByteArray(reinterpret_cast<const char *>(value.data()),
-                              static_cast<int>(value.size())));
-
-  jo.insert(name.c_str(), QJsonValue::fromVariant(jsonVar));
-  this->impl_ = QJsonValue(jo);
+  impl_[name] = value;
 }
 
 common::ByteArray JsonObjectQt::GetNamedValue(const std::string& name)
 {
-  QJsonObject jo = this->impl_.toObject();
-  auto nameStr   = name.c_str();
-  auto ret       = jo.contains(nameStr)
-                   ? jo[nameStr].isString()
-                   ? jo[nameStr].toString().toUtf8()
-                   : throw exceptions::RMSInvalidArgumentException(
-                           "JsonObjectQt::GetNamedValue: convertion error")
-                         : QByteArray();
+  // nlohmann的is_string只支持utf8
+  if (!impl_.contains(name)) {
+     return common::ByteArray();
+  }
 
-  return common::ByteArray(ret.begin(), ret.end());
+  auto val = impl_[name];
+  if (val.is_string() || val.is_binary()) {
+     return common::ByteArray(val.begin(), val.end());
+  }
+
+  return common::ByteArray();
 }
 
 StringArray JsonObjectQt::GetNamedStringArray(const std::string& name)
 {
-  QJsonObject jo = this->impl_.toObject();
-
-  if (!jo.contains(name.c_str()))
+  if (!impl_.contains(name))
   {
     Logger::Warning(
       "JsonObjectQt::GetNamedStringArray: Can't find the key named '%s'",
@@ -234,20 +186,20 @@ StringArray JsonObjectQt::GetNamedStringArray(const std::string& name)
     return std::vector<std::string>();
   }
 
-  QJsonValue val = jo[name.c_str()];
+  auto array = impl_[name];
 
-  if (!val.isArray())
+  if (!array.is_array())
   {
     throw exceptions::RMSInvalidArgumentException("the value is not an array");
   }
 
   StringArray list;
-  QJsonArray  arr = val.toArray();
 
-  for (int i = 0; i < arr.size(); ++i)
+  for (size_t i = 0; i < array.size(); ++i)
   {
-    QJsonValue val = arr[i];
-    list.push_back(val.toString().toStdString());
+    //QJsonValue::toString: if !isString return null QString
+    auto val = array[i];
+    list.push_back(val.is_string() ? val.template get<std::string>() : std::string());
   }
 
   return list;
@@ -255,27 +207,31 @@ StringArray JsonObjectQt::GetNamedStringArray(const std::string& name)
 
 modernapi::AppDataHashMap JsonObjectQt::ToStringDictionary()
 {
-  QVariantMap map =  this->impl_.toObject().toVariantMap();
-
   modernapi::AppDataHashMap result;
 
-  for (QString& key : map.keys())
-  {
-    result.insert(std::make_pair(key.toStdString(),
-                                 map[key].toString().toStdString()));
+  if (!impl_.is_object()) {
+      return result;
   }
+
+  for (auto it = impl_.begin(); it != impl_.end(); ++it) {
+      auto val = it.value();
+    //QJsonValue::toString: if !isString return null QString
+      if (val.is_string()) {
+          result.insert(std::make_pair(it.key(), val.template get<std::string>()));
+      } else {
+          result.insert(std::make_pair(it.key(), std::string()));
+      }
+  }
+
   return result;
 }
 
 common::ByteArray JsonObjectQt::Stringify()
 {
-  QJsonDocument doc(this->impl_.toObject());
-
-  auto res = doc.toJson(QJsonDocument::Compact);
+  auto res = impl_.dump();
 
   return common::ByteArray(res.begin(), res.end());
 }
 }
 }
 } // namespace rmscore { namespace platform { namespace json {
-#endif // ifdef QTFRAMEWORK

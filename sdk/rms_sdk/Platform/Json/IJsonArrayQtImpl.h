@@ -9,8 +9,7 @@
 #ifndef IJSONARRAYQTIMPL
 #define IJSONARRAYQTIMPL
 
-#include <QJsonArray>
-#include <QJsonValue>
+#include <nlohmann/json.h>
 
 #include "IJsonArray.h"
 #include "IJsonObject.h"
@@ -33,12 +32,12 @@ private:
     virtual void Append(const std::string& name) override;
 
 private:
-    QJsonArray impl_;
+   nlohmann::json impl_; 
 
 public:
     JsonArrayQt(){}
-    JsonArrayQt(const QJsonArray& impl):impl_(impl){}
-    const QJsonArray& impl(){return this->impl_;}
+    JsonArrayQt(const nlohmann::json& impl):impl_(impl){}
+    const nlohmann::json& impl() { return this->impl_; }
 
 };
 

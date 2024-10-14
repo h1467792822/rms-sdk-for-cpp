@@ -7,6 +7,7 @@
 */
 
 #include "PlatformJsonObjectTest.h"
+#include <nlohmann/json.hpp>
 #include "../../Platform/Logger/Logger.h"
 #include "../../Platform/Json/IJsonParser.h"
 #include "../../Platform/Json/IJsonObject.h"
@@ -237,8 +238,8 @@ void PlatformJsonObjectTest::testStringify()
   auto pJsonObject = pJsonParser->Parse(rmscore::common::ByteArray(jsonArr.begin(), jsonArr.end()));
   QVERIFY(pJsonObject != nullptr);
   auto stringified = pJsonObject->Stringify();
-  QByteArray actualRes((const char *)stringified.data(), (int)stringified.size());
-  auto expectedRes = QJsonDocument::fromJson(jsonAsString.toUtf8()).toJson(QJsonDocument::Compact);
+  std::string actualRes((const char *)stringified.data(), (int)stringified.size());
+  auto expectedRes = nlohmann::json::parse(jsonAsString.toStdString()).dump();
 
   QCOMPARE(actualRes, expectedRes);
 }
@@ -248,9 +249,9 @@ void PlatformJsonObjectTest::testSetNamedString()
   auto pJsonObject = IJsonObject::Create();
   pJsonObject->SetNamedString("myString", "MyStringValue");
   auto stringified = pJsonObject->Stringify();
-  QByteArray actualRes((const char *)stringified.data(), (int)stringified.size());
-  QString jsonAsString = "{\"myString\":\"MyStringValue\"}";
-  auto expectedRes = QJsonDocument::fromJson(jsonAsString.toUtf8()).toJson(QJsonDocument::Compact);
+  std::string actualRes((const char *)stringified.data(), (int)stringified.size());
+  std::string jsonAsString = "{\"myString\":\"MyStringValue\"}";
+  auto expectedRes = nlohmann::json::parse(jsonAsString).dump();
 
   QCOMPARE(actualRes, expectedRes);
 }
@@ -262,9 +263,9 @@ void PlatformJsonObjectTest::testSetNamedObject()
   auto pJsonObject1 = IJsonObject::Create();
   pJsonObject1->SetNamedObject("myObject", *pJsonObject);
   auto stringified = pJsonObject1->Stringify();
-  QByteArray actualRes((const char *)stringified.data(), (int)stringified.size());
-  QString jsonAsString = "{\"myObject\":{\"myString\":\"MyStringValue\"}}";
-  auto expectedRes = QJsonDocument::fromJson(jsonAsString.toUtf8()).toJson(QJsonDocument::Compact);
+  std::string actualRes((const char *)stringified.data(), (int)stringified.size());
+  std::string jsonAsString = "{\"myObject\":{\"myString\":\"MyStringValue\"}}";
+  auto expectedRes = nlohmann::json::parse(jsonAsString).dump();
 
   QCOMPARE(actualRes, expectedRes);
 }
@@ -277,9 +278,9 @@ void PlatformJsonObjectTest::testSetNamedArray()
   auto pJsonObject = IJsonObject::Create();
   pJsonObject->SetNamedArray("myArray", *pJsonArray);
   auto stringified = pJsonObject->Stringify();
-  QByteArray actualRes((const char *)stringified.data(), (int)stringified.size());
-  QString jsonAsString = "{\"myArray\":[\"string1\",\"string2\"]}";
-  auto expectedRes = QJsonDocument::fromJson(jsonAsString.toUtf8()).toJson(QJsonDocument::Compact);
+  std::string actualRes((const char *)stringified.data(), (int)stringified.size());
+  std::string jsonAsString = "{\"myArray\":[\"string1\",\"string2\"]}";
+  auto expectedRes = nlohmann::json::parse(jsonAsString).dump();
 
   QCOMPARE(actualRes, expectedRes);
 }

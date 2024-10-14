@@ -10,8 +10,7 @@
 #include <Exceptions.h>
 #include <Logger.h>
 #include "JsonUtilsQt.h"
-#include <QJsonDocument>
-#include <QJsonObject>
+#include <nlohmann/json.hpp>
 
 namespace rmsauth {
 
@@ -20,13 +19,14 @@ AuthenticationResultPtr AuthenticationResult::deserialize(const String& jsonStri
     Logger::info(Tag(), "deserialize");
     AuthenticationResultPtr result = nullptr;
 
-    QJsonParseError error;
-    auto qdoc = QJsonDocument::fromJson(jsonString.c_str(), &error);
-    if( error.error != QJsonParseError::NoError )
-    {
-        throw RmsauthException(String("AuthenticationResult::deserialize: ") + error.errorString().toStdString());
+    nlohmann::json qobj;
+    try {
+        qobj = nlohmann::json::parse(jsonString);
     }
-    QJsonObject qobj  = qdoc.object();
+    catch(std::exception& e)
+    {
+        throw RmsauthException(String("AuthenticationResult::deserialize: ") + e.what());
+    }
 
     result.reset(new AuthenticationResult());
 
@@ -47,21 +47,19 @@ AuthenticationResultPtr AuthenticationResult::deserialize(const String& jsonStri
 String AuthenticationResult::serialize()
 {
     Logger::info(Tag(), "serialize");
-    QJsonObject qobj;
+    nlohmann::json qobj;
     JsonUtilsQt::insertString(qobj, AuthenticationResult::JsonNames.accessTokenType, accessTokenType_);
     JsonUtilsQt::insertString(qobj, AuthenticationResult::JsonNames.accessToken, accessToken_);
     JsonUtilsQt::insertString(qobj, AuthenticationResult::JsonNames.resource, resource_);
     JsonUtilsQt::insertString(qobj, AuthenticationResult::JsonNames.refreshToken, refreshToken_);
-    qobj.insert(AuthenticationResult::JsonNames.expiresOn.c_str(), (int)expiresOn_);
+    qobj[AuthenticationResult::JsonNames.expiresOn] = (int)expiresOn_;
     JsonUtilsQt::insertString(qobj, AuthenticationResult::JsonNames.tenantId, tenantId_);
     if(userInfo_ != nullptr)
         JsonUtilsQt::insertObject(qobj, AuthenticationResult::JsonNames.userInfo, userInfo_->serialize());
     JsonUtilsQt::insertString(qobj, AuthenticationResult::JsonNames.idToken, idToken_);
-    qobj.insert(AuthenticationResult::JsonNames.isMultipleResourceRefreshToken.c_str(), isMultipleResourceRefreshToken_);
+    qobj[AuthenticationResult::JsonNames.isMultipleResourceRefreshToken] = isMultipleResourceRefreshToken_;
 
-    QJsonDocument doc(qobj);
-    auto res = doc.toJson(QJsonDocument::Compact);
-    return String(res.begin(), res.end());
+    return qobj.dump();
 }
 
 } // namespace rmsauth {

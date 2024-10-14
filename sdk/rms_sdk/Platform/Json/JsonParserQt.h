@@ -9,7 +9,6 @@
 #ifndef IJSONPARSERQTIMPL
 #define IJSONPARSERQTIMPL
 
-#include <QJsonDocument>
 #include "IJsonParser.h"
 
 namespace rmscore { namespace platform { namespace json {

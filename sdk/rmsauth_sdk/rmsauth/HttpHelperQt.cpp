@@ -19,12 +19,11 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QEventLoop>
 #include <QUuid>
 #include <QCoreApplication>
 #include <QTimer>
+#include <nlohmann/json.hpp>
 
 namespace rmsauth {
 
@@ -268,15 +267,14 @@ TokenResponsePtr HttpHelperQt::deserializeTokenResponse(const QByteArray& body)
     StringStream ss; ss << "jsonObject: " << String(body.begin(), body.end());
     Logger::hidden(Tag(), ss.str());
 
-    QJsonParseError error;
-    auto qdoc = QJsonDocument::fromJson(body, &error);
-
-    if (error.error != QJsonParseError::NoError)
-    {
-        throw RmsauthException(String("deserializeTokenResponse: ") + error.errorString().toStdString());
+    nlohmann::json qobj;
+    try {
+        qobj = nlohmann::json::parse(String(body.begin(), body.end()));
     }
-
-    QJsonObject qobj = qdoc.object();
+    catch(std::exception& e)
+    {
+        throw RmsauthException(String("deserializeTokenResponse: ") + e.what());
+    }
 
     pTokenResponse->tokenType     = JsonUtilsQt::getStringOrDefault(qobj,       TokenResponse::jsonNames().tokenType);
     pTokenResponse->accessToken   = JsonUtilsQt::getStringOrDefault(qobj,       TokenResponse::jsonNames().accessToken);
@@ -304,15 +302,14 @@ InstanceDiscoveryResponsePtr HttpHelperQt::deserializeInstanceDiscoveryResponse(
     StringStream ss; ss << "jsonObject: " << String(body.begin(), body.end());
     Logger::hidden(Tag(), ss.str());
 
-    QJsonParseError parseError;
-    auto qdoc = QJsonDocument::fromJson(body, &parseError);
-
-    if (parseError.error != QJsonParseError::NoError)
-    {
-        throw RmsauthException(String("deserializeInstanceDiscoveryResponse QJsonDocument::fromJson: ") + parseError.errorString().toStdString());
+    nlohmann::json qobj;
+    try {
+        qobj = nlohmann::json::parse(String(body.begin(), body.end()));
     }
-
-    QJsonObject qobj = qdoc.object();
+    catch(std::exception& e)
+    {
+        throw RmsauthException(String("deserializeInstanceDiscoveryResponse fromJson: ") + e.what());
+    }
 
     pInstanceDiscoveryResponse->tenantDiscoveryEndpoint = JsonUtilsQt::getStringOrDefault(qobj, InstanceDiscoveryResponse::jsonNames().tenantDiscoveryEndpoint);
 
@@ -336,14 +333,13 @@ ErrorResponsePtr HttpHelperQt::parseResponseError(QNetworkReply* pReply)
     }
     else
     {
-        QJsonParseError parseError;
-        auto qdoc = QJsonDocument::fromJson(jsonObject, &parseError);
-
-        if (parseError.error != QJsonParseError::NoError)
+	nlohmann::json qobj;
+        try {
+	    qobj = nlohmann::json::parse(String(jsonObject.begin(), jsonObject.end()));
+	}
+	catch(std::exception& e)
         {
                 }
-
-        QJsonObject qobj = qdoc.object();
 
         pErrorResponse->error            = JsonUtilsQt::getStringOrDefault(qobj, ErrorResponse::jsonNames().error);
         pErrorResponse->errorDescription = JsonUtilsQt::getStringOrDefault(qobj, ErrorResponse::jsonNames().errorDescription);

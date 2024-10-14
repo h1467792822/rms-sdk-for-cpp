@@ -11,8 +11,7 @@
 #include <RmsauthIdHelper.h>
 #include <QNetworkRequest>
 #include <QCoreApplication>
-#include <QJsonDocument>
-#include <QJsonObject>
+#include <nlohmann/json.hpp>
 #include "HttpHelperQt.h"
 #include "JsonUtilsQt.h"
 
@@ -22,15 +21,14 @@ static UserRealmDiscoveryResponse deserializeUserRealmDiscoveryResponse(const QB
 {
     Logger::info("deserializeUserRealmDiscoveryResponse", "jsonObject: %", String(body.begin(), body.end()));
 
-    QJsonParseError error;
-    auto qdoc = QJsonDocument::fromJson(body, &error);
-
-    if (error.error != QJsonParseError::NoError)
-    {
-        throw RmsauthException(String("deserializeUserRealmDiscoveryResponse: ") + error.errorString().toStdString());
+    nlohmann::json qobj;
+    try {
+        qobj = nlohmann::json::parse(String(body.begin(), body.end()));
     }
-
-    QJsonObject qobj = qdoc.object();
+    catch(std::exception& e)
+    {
+        throw RmsauthException(String("deserializeUserRealmDiscoveryResponse: ") + e.what());
+    }
 
     UserRealmDiscoveryResponse userRealmResponse;
 

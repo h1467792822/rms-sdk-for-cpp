@@ -9,11 +9,7 @@
 #ifndef IJSONOBJECTQTIMPL
 #define IJSONOBJECTQTIMPL
 
-#include <QJsonValue>
-#include <QJsonArray>
-#include <QJsonValue>
-#include <QJsonObject>
-
+#include <nlohmann/json.hpp>
 #include "IJsonObject.h"
 
 namespace rmscore {
@@ -77,15 +73,15 @@ private:
 
 private:
 
-  QJsonValue impl_;
+  nlohmann::json impl_;
 
 public:
 
   JsonObjectQt() {}
 
-  JsonObjectQt(const QJsonValue& impl) : impl_(impl) {}
+  JsonObjectQt(const nlohmann::json& impl) : impl_(impl) {}
 
-  const QJsonValue& impl() {
+  const nlohmann::json& impl() {
     return this->impl_;
   }
 };

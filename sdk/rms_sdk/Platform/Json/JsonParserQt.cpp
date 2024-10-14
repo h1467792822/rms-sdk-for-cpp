@@ -6,7 +6,7 @@
  * ======================================================================
 */
 
-#ifdef QTFRAMEWORK
+#include <nlohmann/json.hpp>
 #include "JsonParserQt.h"
 #include "JsonObjectQt.h"
 #include "JsonArrayQt.h"
@@ -25,51 +25,40 @@ std::shared_ptr<IJsonParser>IJsonParser::Create()
 std::shared_ptr<IJsonObject>JsonParserQt::Parse(
   const common::ByteArray& jsonObject)
 {
-  QJsonParseError error;
-  auto data = jsonObject.data();
-  QByteArray inArray(reinterpret_cast<const char *>(data),
-                     static_cast<int>(jsonObject.size()));
-  auto qdoc = QJsonDocument::fromJson(inArray, &error);
-
-  if (error.error != QJsonParseError::NoError)
+  if (!nlohmann::json::accept(jsonObject))
   {
-    Logger::Error("JsonParserQt::Parse: %s",
-                  error.errorString().toStdString().data());
+    Logger::Error("JsonParserQt::Parse: %s", "given json is invalid format");
     return nullptr;
   }
 
-  if (!qdoc.isObject())
+  auto val = nlohmann::json::parse(jsonObject);
+
+  if (!val.is_object())
   {
     Logger::Error("JsonParserQt::Parse: %s", "given json is not a json object");
     return nullptr;
   }
-  return std::make_shared<JsonObjectQt>(QJsonValue(qdoc.object()));
+  return std::make_shared<JsonObjectQt>(val);
 }
 
 std::shared_ptr<IJsonArray>JsonParserQt::ParseArray(
   const common::ByteArray& jsonArray)
 {
-  QJsonParseError error;
-  auto qdoc =
-    QJsonDocument::fromJson(
-      QByteArray(reinterpret_cast<const char *>(jsonArray.data()),
-                 static_cast<int>(jsonArray.size())), &error);
-
-  if (error.error != QJsonParseError::NoError)
+  if (!nlohmann::json::accept(jsonArray))
   {
-    Logger::Error("JsonParserQt::Parse: %s",
-                  error.errorString().toStdString().data());
+    Logger::Error("JsonParserQt::Parse: %s", "given json is invalid format");
     return nullptr;
   }
 
-  if (!qdoc.isArray())
+  auto val = nlohmann::json::parse(jsonArray);
+
+  if (!val.is_array())
   {
     Logger::Error("JsonParserQt::Parse: %s", "given json is not a json array");
     return nullptr;
   }
-  return std::make_shared<JsonArrayQt>(qdoc.array());
+  return std::make_shared<JsonArrayQt>(val);
 }
 }
 }
 } // namespace rmscore { namespace platform { namespace json {
-#endif // ifdef QTFRAMEWORK

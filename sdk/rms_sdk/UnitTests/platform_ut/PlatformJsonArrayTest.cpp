@@ -7,6 +7,7 @@
 */
 
 #include "PlatformJsonArrayTest.h"
+#include <nlohmann/json.hpp>
 #include "../../Platform/Logger/Logger.h"
 #include "../../Platform/Json/IJsonParser.h"
 #include "../../Platform/Json/IJsonObject.h"
@@ -85,9 +86,9 @@ void PlatformJsonArrayTest::testAppendObject()
   pJsonArray->Append(*pJsonObject1);
   pJsonArray->Append(*pJsonObject2);
   rmscore::common::ByteArray stringified = pJsonArray->Stringify();
-  QByteArray actualRes((const char *)stringified.data(), (int)stringified.size());
-  QString jsonAsString = "[{\"myString\":\"MyStringValue\"},{\"myBool\":true,\"myNum\":1515}]";
-  auto expectedRes = QJsonDocument::fromJson(jsonAsString.toUtf8()).toJson(QJsonDocument::Compact);
+  std::string actualRes((const char *)stringified.data(), (int)stringified.size());
+  std::string jsonAsString = "[{\"myString\":\"MyStringValue\"},{\"myBool\":true,\"myNum\":1515}]";
+  auto expectedRes = nlohmann::json::parse(jsonAsString).dump();
   QCOMPARE(actualRes, expectedRes);
 }
 
@@ -98,8 +99,8 @@ void PlatformJsonArrayTest::testAppendString()
   pJsonArray->Append("string1");
   pJsonArray->Append("string2");
   rmscore::common::ByteArray stringified = pJsonArray->Stringify();
-  QByteArray actualRes((const char *)stringified.data(), (int)stringified.size());
-  QString jsonAsString = "[\"string1\",\"string2\"]";
-  auto expectedRes = QJsonDocument::fromJson(jsonAsString.toUtf8()).toJson(QJsonDocument::Compact);
+  std::string actualRes((const char *)stringified.data(), (int)stringified.size());
+  std::string jsonAsString = "[\"string1\",\"string2\"]";
+  auto expectedRes = nlohmann::json::parse(jsonAsString).dump();
   QCOMPARE(actualRes, expectedRes);
 }

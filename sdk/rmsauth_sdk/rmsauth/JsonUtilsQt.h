@@ -11,8 +11,7 @@
 
 #include <types.h>
 #include <Exceptions.h>
-#include <QJsonObject>
-#include <QJsonDocument>
+#include <nlohmann/json.hpp>
 
 namespace rmsauth {
 
@@ -23,31 +22,26 @@ class JsonUtilsQt
     using Deserializer = P (*)(const String& jsonString);
 
 public:
-    static String getStringOrDefault(const QJsonObject& qobj, const String& key, const String defval = "");
-    static int getIntOrDefault(const QJsonObject& qobj, const String& key, int defval = 0 );
-    static int getStringAsIntOrDefault(const QJsonObject& qobj, const String& key, int defval = 0);
-    static bool getBoolOrDefault(const QJsonObject& qobj, const String& key, bool defval = false);
-    static IntArray getIntArrayOrEmpty(const QJsonObject& qobj, const String& key);
+    static String getStringOrDefault(const nlohmann::json& qobj, const String& key, const String defval = "");
+    static int getIntOrDefault(const nlohmann::json& qobj, const String& key, int defval = 0 );
+    static int getStringAsIntOrDefault(const nlohmann::json& qobj, const String& key, int defval = 0);
+    static bool getBoolOrDefault(const nlohmann::json& qobj, const String& key, bool defval = false);
+    static IntArray getIntArrayOrEmpty(const nlohmann::json& qobj, const String& key);
     template<typename T>
-    static T parseObject(const QJsonObject& qobj, const String& key, Deserializer<T> d);
-    static void insertObject(QJsonObject& qobj, const String& key, const String& jsonString);
-    static void insertString(QJsonObject& qobj, const String& key, const String& str);
+    static T parseObject(const nlohmann::json& qobj, const String& key, Deserializer<T> d);
+    static void insertObject(nlohmann::json& qobj, const String& key, const String& jsonString);
+    static void insertString(nlohmann::json& qobj, const String& key, const String& str);
 };
 
 template<typename P>
-P JsonUtilsQt::parseObject(const QJsonObject& qobj, const String& key, Deserializer<P> deserialize)
+P JsonUtilsQt::parseObject(const nlohmann::json& qobj, const String& key, Deserializer<P> deserialize)
 {
-    if (!qobj.contains(key.data()))
+    if (!qobj.contains(key))
     {
         return nullptr;
     }
 
-    auto qjo = qobj.value(key.data());
-    QJsonDocument doc(qjo.toObject());
-
-    auto jsonData = doc.toJson(QJsonDocument::Compact);
-
-    return deserialize(String(jsonData.begin(), jsonData.end()));
+    return deserialize(qobj[key].dump());
 }
 
 } // namespace rmsauth {

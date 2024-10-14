@@ -53,7 +53,7 @@ class DateTime {
             std::string std_format;
             std_format.reserve(format.size());
             auto data = format.data();
-            for (int i = 0; i < format.size(); ++i) {
+            for (size_t i = 0; i < format.size(); ++i) {
                     if (data[i] == '%') {
                             std_format.push_back('%');
                             if (data[i + 1]) std_format.push_back(data[i + 1]);
