@@ -6,14 +6,8 @@
  * ======================================================================
  */
 
-#ifdef QTFRAMEWORK
-#include <QDnsLookup>
-#include <QEventLoop>
-#include <QCoreApplication>
-#include <QTimer>
+#include <udns.h>
 #include "DnsServerResolverQt.h"
-#include <QUdpSocket>
-//#include <QThread>
 #include "../../Platform/Logger/Logger.h"
 
 using namespace std;
@@ -28,6 +22,7 @@ shared_ptr<IDnsServerResolver>IDnsServerResolver::Create()
   return make_shared<DnsServerResolverQt>();
 }
 
+#if 0
 std::string DnsServerResolverQt::doLookup(const std::string& dnsRequest)
 {
   QDnsLookup dns;
@@ -76,9 +71,28 @@ std::string DnsServerResolverQt::lookup(const std::string& dnsRequest)
 
   return doLookup(dnsRequest);
 }
+#endif
 
+std::string DnsServerResolverQt::lookup(const std::string& dnsRequest)
+{
+    std::string name;
+    dns_reset(&dns_defctx);
+    struct dns_ctx* ctx = dns_new(&dns_defctx);
+    if (!ctx) {
+        return name;
+    }
+    int fd = dns_init(ctx, 1);
+    if (fd >= 0) {
+        struct dns_rr_srv* srv = dns_resolve_srv(ctx, dnsRequest.c_str(), 0, 0, 0);
+        if (srv && srv->dnssrv_nrr > 0) {
+            name = srv->dnssrv_srv[0].name;
+        }
+	dns_reset(ctx);
+    }
+    dns_free(ctx);
+    return name;
+}
 
 } // namespace http
 } // namespace platform
 } // namespace rmscore
-#endif // ifdef QTFRAMEWORK
