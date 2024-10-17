@@ -57,7 +57,7 @@ static size_t ReadBody(char* buff, size_t size, size_t nitems, void* userdata)
   if (!ctx->cancelled()) {
     size_t len = size * nitems;
     ctx->body.reserve(ctx->body.size() + len);
-    std::copy(buff, buff + size, std::inserter(ctx->body, ctx->body.end()));
+    std::copy(buff, buff + len, std::back_inserter(ctx->body));
     return len;
   }
   return 0;
@@ -134,7 +134,7 @@ HttpClientQt::HttpClientQt() {
   if (curl) {
     struct curl_blob blob;
     blob.data = (void*)MicrosoftCertCAList;
-    blob.len = sizeof(MicrosoftCertCAList);
+    blob.len = sizeof(MicrosoftCertCAList) - 1;
     blob.flags = 0;
     curl_easy_setopt(curl, CURLOPT_CAINFO_BLOB, &blob);
   }
@@ -376,6 +376,7 @@ StatusCode HttpClientQt::Get(const string& url,
                              std::shared_ptr<std::atomic<bool> >cancelState)
 {
   Logger::Info("==> GetWithCoreAppContext %s", url.data());
+  Logger::Info("==> GetWithCoreAppContext %s", url.data());
   curl_easy_setopt(curl, CURLOPT_HTTPGET, (void*)1);
   return doRequest(url, response, cancelState);
 }
@@ -390,9 +391,11 @@ StatusCode HttpClientQt::doRequest(const string& url,
   for (curl_slist* hdr = headers; hdr; hdr = hdr->next) {
     Logger::Hidden(hdr->data);
   }
+
+  cancelled = false;
   curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, &headers);
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout_seconds); 
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, ReadHeader);
   curl_easy_setopt(curl, CURLOPT_HEADERDATA, &ctx);
@@ -451,7 +454,7 @@ static int ParseStatus(const std::string& header)
 static std::pair<std::string, std::string> ParseHeader(const std::string& header)
 {
   auto pos = header.find(':');
-  auto name = header.substr(0, pos);
+  auto name = pos != std::string::npos ? header.substr(0, pos) : "";
   for (pos++; header[pos] && isspace(header[pos]); ++pos) {}
   auto value = header.substr(pos);
   return std::make_pair(name, value); 
