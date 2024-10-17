@@ -6,20 +6,17 @@
  * ======================================================================
  */
 
-#ifdef QTFRAMEWORK
-
 #include "HttpClientQt.h"
-//#include <QThread>
-//#include <QMutex>
-#include <QEventLoop>
-#include <QCoreApplication>
-#include <QTimer>
-#include <QNetworkProxyFactory>
-
 #include "../Logger/Logger.h"
 #include "../../ModernAPI/RMSExceptions.h"
 #include "mscertificates.h"
 #include "HttpClientQt.h"
+#include <iterator>
+#include <algorithm>
+#include <utility>
+#include <cstdio>
+#include <cstring>
+#include <cctype>
 
 using namespace std;
 using namespace rmscore::platform::logger;
@@ -27,6 +24,46 @@ using namespace rmscore::platform::logger;
 namespace rmscore {
 namespace platform {
 namespace http {
+
+class RespCtx {
+public:
+  HttpClientQt& client;
+  common::ByteArray& body;
+  std::shared_ptr<atomic<bool>>& cancelState;
+  RespCtx(HttpClientQt& client, common::ByteArray& body, std::shared_ptr<atomic<bool>>& cancelState):
+	 client(client), body(body), cancelState(cancelState) {} 
+  bool cancelled() {
+    return client.cancel(cancelState != nullptr && cancelState->load());
+  }
+  void onRespHeader(const std::string& header) {
+    client.onRespHeader(header);
+  }
+};
+
+static size_t ReadHeader(char* buff, size_t size, size_t nitems, void* userdata)
+{
+  RespCtx* ctx = reinterpret_cast<RespCtx*>(userdata);
+  if (!ctx->cancelled()) {
+    size_t len = size * nitems;
+    ctx->onRespHeader(std::string(buff, len));
+    return len;
+  }
+  return 0;
+}
+
+static size_t ReadBody(char* buff, size_t size, size_t nitems, void* userdata)
+{
+  RespCtx* ctx = reinterpret_cast<RespCtx*>(userdata);
+  if (!ctx->cancelled()) {
+    size_t len = size * nitems;
+    ctx->body.reserve(ctx->body.size() + len);
+    std::copy(buff, buff + size, std::inserter(ctx->body, ctx->body.end()));
+    return len;
+  }
+  return 0;
+}
+
+#if 0
 common::ByteArray ReadAllBytes(QIODevice *from) {
   common::ByteArray result;
   auto bytesAvailable = from->bytesAvailable();
@@ -80,13 +117,37 @@ shared_ptr<IHttpClient> IHttpClient::Create() {
 
   return doCreate();
 }
+#endif
 
+shared_ptr<IHttpClient> IHttpClient::Create() {
+  return make_shared<HttpClientQt>();
+}
+
+#if 0
 HttpClientQt::HttpClientQt() : lastReply_(nullptr) {
   this->request_.setSslConfiguration(QSslConfiguration::defaultConfiguration());
   QNetworkProxyFactory::setUseSystemConfiguration(true);
 }
+#endif
+HttpClientQt::HttpClientQt() {
+  curl = curl_easy_init();
+  if (curl) {
+    struct curl_blob blob;
+    blob.data = (void*)MicrosoftCertCAList;
+    blob.len = sizeof(MicrosoftCertCAList);
+    blob.flags = 0;
+    curl_easy_setopt(curl, CURLOPT_CAINFO_BLOB, &blob);
+  }
+}
 
-HttpClientQt::~HttpClientQt() {}
+HttpClientQt::~HttpClientQt() {
+  if (headers) {
+    curl_slist_free_all(headers);
+  }
+  if (curl) {
+    curl_easy_cleanup(curl);
+  }
+}
 
 void HttpClientQt::AddAuthorizationHeader(const string& authToken) {
   this->AddHeader("Authorization", authToken);
@@ -102,9 +163,12 @@ void HttpClientQt::AddAcceptLanguageHeader(const string& language) {
 
 void HttpClientQt::AddHeader(const string& headerName,
                              const string& headerValue) {
-  this->request_.setRawHeader(headerName.c_str(), headerValue.c_str());
+  auto header = headerName + ": " + headerValue;
+  headers = curl_slist_append(headers, header.c_str());
+  //this->request_.setRawHeader(headerName.c_str(), headerValue.c_str());
 }
 
+#if 0
 StatusCode HttpClientQt::doPost(const string& url,
                               const common::ByteArray& request,
                               const string& mediaType,
@@ -201,7 +265,25 @@ StatusCode HttpClientQt::Post(const string& url,
   }
   return doPost(url, request, mediaType, response, cancelState);
 }
+#endif 
+StatusCode HttpClientQt::Post(const string& url,
+                              const common::ByteArray& request,
+                              const string& mediaType,
+                              common::ByteArray& response,
+                              std::shared_ptr<std::atomic<bool> >cancelState)
+{
+  Logger::Info("==> PostWithCoreAppContext %s", url.data());
+  std::string req(request.begin(), request.end());
+  Logger::Hidden("==> Request Body: %s", req.c_str());
 
+  this->AddAcceptMediaTypeHeader(mediaType);
+  
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (void*)request.size());
+  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request.data());
+
+  return doRequest(url, response, cancelState);
+}
+#if 0
 StatusCode HttpClientQt::doGet(const string& url,
                              common::ByteArray& response,
                              std::shared_ptr<std::atomic<bool> >cancelState)
@@ -286,16 +368,114 @@ StatusCode HttpClientQt::Get(const string& url,
 
   return doGet(url, response, cancelState);
 }
+#endif
+
+// 如下简单实现是无法取消的，用一个超时时间来替代，如果超时之后又取消了，说明取消成功
+StatusCode HttpClientQt::Get(const string& url,
+                             common::ByteArray& response,
+                             std::shared_ptr<std::atomic<bool> >cancelState)
+{
+  Logger::Info("==> GetWithCoreAppContext %s", url.data());
+  curl_easy_setopt(curl, CURLOPT_HTTPGET, (void*)1);
+  return doRequest(url, response, cancelState);
+}
+
+StatusCode HttpClientQt::doRequest(const string& url,
+  common::ByteArray& response,
+  std::shared_ptr<std::atomic<bool> >& cancelState)
+{
+  char errbuf[CURL_ERROR_SIZE] = { 0 };
+  RespCtx ctx(*this, response, cancelState);
+  Logger::Hidden("==> Request headers:");
+  for (curl_slist* hdr = headers; hdr; hdr = hdr->next) {
+    Logger::Hidden(hdr->data);
+  }
+  curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, &headers);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout_seconds); 
+  curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, ReadHeader);
+  curl_easy_setopt(curl, CURLOPT_HEADERDATA, &ctx);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ReadBody);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ctx);
+
+  resp_headers.clear();
+  resp_status = 0;
+
+  int nret = curl_easy_perform(curl);
+  curl_slist_free_all(headers);
+  headers = nullptr;
+
+  if (this->cancelled) {
+      throw exceptions::RMSNetworkException(
+              "Network operation was cancelled by user",
+              exceptions::RMSNetworkException::CancelledByUser);
+  }
+
+  Logger::Info("Response StatusCode: %d", resp_status);
+  Logger::Hidden("--> Response Headers:");
+  for(const auto& kv: resp_headers) {
+    Logger::Hidden("%s: %s", kv.first.c_str(), kv.second.c_str());
+  }
+  Logger::Hidden("--> Response Body:");
+  Logger::Hidden(string(response.begin(), response.end()));
+
+  if (errbuf[0] || nret != CURLE_OK) {
+    Logger::Error("CURL error: %d, errmsg: %s", nret, errbuf);
+  }
+
+  return StatusCode(resp_status);
+}
 
 const string HttpClientQt::GetResponseHeader(const string& headerName) {
-  return string(lastReply_->rawHeader(headerName.c_str()).data());
+  //return string(lastReply_->rawHeader(headerName.c_str()).data());
+  return resp_headers[headerName];
 }
 
 void HttpClientQt::SetAllowUI(bool /* allow*/)
 {
   throw exceptions::RMSNotFoundException("Not implemented");
 }
+
+static int ParseStatus(const std::string& header)
+{
+  static const char HTTP[] = "HTTP/";
+  if (strncmp(header.c_str(), HTTP, sizeof(HTTP) - 1) == 0) {
+    int status;
+    int nret = sscanf(header.c_str(), "%*s%d", &status);
+    return nret == 1 ? status : 0;
+  }
+  return 0;
 }
+
+static std::pair<std::string, std::string> ParseHeader(const std::string& header)
+{
+  auto pos = header.find(':');
+  auto name = header.substr(0, pos);
+  for (pos++; header[pos] && isspace(header[pos]); ++pos) {}
+  auto value = header.substr(pos);
+  return std::make_pair(name, value); 
 }
-} // namespace rmscore { namespace platform { namespace http {
-#endif // ifdef QTFRAMEWORK
+
+void HttpClientQt::onRespHeader(const std::string& header)
+{
+  int status = ParseStatus(header);
+  if (status == 0) {
+    auto kv = ParseHeader(header);
+    if (!kv.first.empty()) {
+      resp_headers[kv.first] = kv.second;
+    }
+  } else {
+    resp_status = status;
+  }
+}
+
+bool HttpClientQt::cancel(bool cancelled)
+{
+  this->cancelled = cancelled;
+  return cancelled;
+}
+
+} // namespace rmscore 
+} // namespace platform
+} // namespace http

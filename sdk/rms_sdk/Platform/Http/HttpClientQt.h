@@ -9,12 +9,11 @@
 #ifndef _HTTPCLIENTQT_H_
 #define _HTTPCLIENTQT_H_
 
-#include <QCoreApplication>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
+#include <curl/curl.h>
 #include <exception>
 #include <atomic>
+#include <map>
+#include <string>
 #include "IHttpClient.h"
 
 namespace rmscore {
@@ -54,10 +53,22 @@ public:
   virtual void SetAllowUI(bool allow) override;
 
 private:
-  QNetworkAccessManager manager_;
-  QNetworkRequest request_;
-  QNetworkReply  *lastReply_;
+  friend class RespCtx;
+  CURL* curl = nullptr;
+  curl_slist* headers = nullptr;
+  std::map<std::string, std::string> resp_headers;
+  int resp_status = 0;
+  int timeout_seconds = 60;
+  bool cancelled = false;
 
+  StatusCode doRequest(
+      const std::string& url,
+      common::ByteArray& response,
+      std::shared_ptr<std::atomic<bool> >& cancelState);
+
+  void onRespHeader(const std::string& header);
+  bool cancel(bool cancelled);
+#if 0
   StatusCode doPost(
       const std::string& url,
       const common::ByteArray& request,
@@ -69,6 +80,7 @@ private:
       const std::string& url,
       common::ByteArray& response,
       std::shared_ptr<std::atomic<bool> >cancelState);
+#endif
 };
 }
 }
