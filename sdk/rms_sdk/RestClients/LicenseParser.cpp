@@ -13,8 +13,10 @@
 #include "../Platform/Xml/IDomDocument.h"
 #include "../Platform/Xml/IDomElement.h"
 #include "../Platform/Logger/Logger.h"
-#include <QCoreApplication>
+#include "../../rmsutils/Guard.h"
+//#include <QCoreApplication>
 
+#include <iconv.h>
 #include "CXMLUtils.h"
 #include "LicenseParser.h"
 
@@ -40,6 +42,7 @@ const uint8_t BOM_UTF8[] = {0xef, 0xbb, 0xbf};
 const shared_ptr<LicenseParserResult> LicenseParser::ParsePublishingLicense(const void *pbPublishLicense,
                                                                 size_t cbPublishLicense)
 {
+  #if 0
   if(!QCoreApplication::instance()) {
     int argc = 1;
     char name[] = "LicenseParser::ParsePublishingLicense";
@@ -47,6 +50,7 @@ const shared_ptr<LicenseParserResult> LicenseParser::ParsePublishingLicense(cons
     QCoreApplication a(argc, &argv);
     return ParsePublishingLicenseInner(pbPublishLicense, cbPublishLicense);
   }
+  #endif
   return ParsePublishingLicenseInner(pbPublishLicense, cbPublishLicense);
 }
 
@@ -64,11 +68,34 @@ const shared_ptr<LicenseParserResult> LicenseParser::ParsePublishingLicenseInner
     else if (cbPublishLicense % 2 == 0)
     {
         // Assume UTF16LE (Unicode)
+        #if 0
         auto strUnicode = QString::fromUtf16(reinterpret_cast<const uint16_t*>(pbPublishLicense), 
                                                               static_cast<int>(cbPublishLicense) / sizeof(uint16_t));
         auto utf8ByteArray = strUnicode.toUtf8();
         string utfString(utf8ByteArray.constData(), utf8ByteArray.length());
-        publishLicense = utfString;
+        #endif
+
+        iconv_t state = iconv_open("UTF-8", "UTF-16LE");
+        if (state == (iconv_t)-1) {
+          throw exceptions::RMSNetworkException("Invalid publishing license encoding",
+                                              exceptions::RMSNetworkException::InvalidPL);
+        }
+        MAKE_GUARD([=]() { iconv_close(state); });
+
+        char* u16 = (char*)pbPublishLicense;
+        size_t u16len = cbPublishLicense;
+
+        size_t u8len_max = u16len * 2;
+        string u8string(u8len_max, '\0');
+        char* u8 = &u8string[0];
+
+        size_t nret = iconv(state, &u16, &u16len, &u8, &u8len_max);
+        if (nret == (size_t)-1) {
+          throw exceptions::RMSNetworkException("Invalid publishing license encoding",
+                                              exceptions::RMSNetworkException::InvalidPL);
+        }
+        u8string.resize(u8 - &u8string[0]);
+        publishLicense = u8string;
     }
     else 
     {
