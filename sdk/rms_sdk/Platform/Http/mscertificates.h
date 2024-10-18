@@ -12,8 +12,7 @@
 //#include <QByteArray>
 
 //const static QByteArray MicrosoftCertCA = {
-//const static char MicrosoftCertCA[] = 
-const static char MicrosoftCertCAList[] = 
+const static char MicrosoftCertCA[] = 
 "-----BEGIN CERTIFICATE-----\r\n\
 MIIF7TCCA9WgAwIBAgIQP4vItfyfspZDtWnWbELhRDANBgkqhkiG9w0BAQsFADCB\r\n\
 iDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCldhc2hpbmd0b24xEDAOBgNVBAcTB1Jl\r\n\
@@ -48,10 +47,11 @@ TclY6ysSXNQ7roxrsIPlAT/4CTL2kzU0Iq/dNw13CYArzUgA8YyZGUcFAenRv9FO\r\n\
 oijHHKOnNlA8OqTfSm7mhzvO6/DggTedEzxSjr25HTTGHdUKaj2YKXCMiSrRq4IQ\r\n\
 SB/c9O+lxbtVGjhjhE63bK2VVOxlIhBJF7jAHscPrFRH\r\n\
 -----END CERTIFICATE-----"
+;
 //};
-"\r\n"
+
 //const static QByteArray MicrosoftCertSubCA = {
-//const static char MicrosoftCertSubCA[] = 
+const static char MicrosoftCertSubCA[] = 
 "-----BEGIN CERTIFICATE-----\r\n\
 MIIGaDCCBFCgAwIBAgITMwAAAJ0G5/l2xKJulgAAAAAAnTANBgkqhkiG9w0BAQsF\r\n\
 ADB+MQswCQYDVQQGEwJVUzETMBEGA1UECBMKV2FzaGluZ3RvbjEQMA4GA1UEBxMH\r\n\

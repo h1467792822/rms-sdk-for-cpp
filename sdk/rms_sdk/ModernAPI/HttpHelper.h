@@ -18,7 +18,7 @@ namespace rmscore {
 namespace modernapi {
 class DLL_PUBLIC_RMS HttpHelper {
 public:
-
+  static const std::vector<uint8_t>& getAllCACertificatesBase64();
   // to use trusted CA put certificates
   static bool addCACertificateBase64(const std::vector<uint8_t>& certificate);
   static bool addCACertificateDer(const std::vector<uint8_t>& certificate);

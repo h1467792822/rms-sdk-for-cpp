@@ -9,6 +9,7 @@
 #include "HttpClientQt.h"
 #include "../Logger/Logger.h"
 #include "../../ModernAPI/RMSExceptions.h"
+#include "../../ModernAPI/HttpHelper.h"
 #include "mscertificates.h"
 #include "HttpClientQt.h"
 #include <iterator>
@@ -132,10 +133,14 @@ HttpClientQt::HttpClientQt() : lastReply_(nullptr) {
 HttpClientQt::HttpClientQt() {
   curl = curl_easy_init();
   if (curl) {
+    std::vector<uint8_t> certs(rmscore::modernapi::HttpHelper::getAllCACertificatesBase64());
+    std::copy(MicrosoftCertCA, MicrosoftCertCA + sizeof(MicrosoftCertCA) - 1, std::back_inserter(certs));
+    std::copy(MicrosoftCertSubCA, MicrosoftCertSubCA + sizeof(MicrosoftCertSubCA) - 1, std::back_inserter(certs));
+
     struct curl_blob blob;
-    blob.data = (void*)MicrosoftCertCAList;
-    blob.len = sizeof(MicrosoftCertCAList) - 1;
-    blob.flags = 0;
+    blob.data = (void*)certs.data();
+    blob.len = certs.size();
+    blob.flags = CURL_BLOB_COPY;
     curl_easy_setopt(curl, CURLOPT_CAINFO_BLOB, &blob);
   }
 }
