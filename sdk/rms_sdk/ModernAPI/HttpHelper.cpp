@@ -18,7 +18,7 @@ namespace modernapi {
 
 static std::vector<uint8_t> all_certs;
 
-static const std::vector<uint8_t>& getAllCACertificatesBase64()
+const std::vector<uint8_t>& HttpHelper::getAllCACertificatesBase64()
 {
   return all_certs;
 }
