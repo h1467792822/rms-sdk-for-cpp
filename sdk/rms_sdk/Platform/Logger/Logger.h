@@ -11,28 +11,30 @@
 
 #include <string>
 #include <cstdio>
-#include <QProcessEnvironment>
+#include <cstdlib>
+#include <syslog.h>
 #include "../Settings/IRMSEnvironmentImpl.h"
 
 namespace rmscore {
 namespace platform {
 namespace logger {
 class Logger {
-  static const int max_length = 1024000;
+  //static const int max_length = 1024000;
 
 public:
 
   template<typename ... Arguments>
-  static void Append(const std::string& prefix,
-                     const std::string& record,
+  static void Append(int priority,
+                     const char* format,
                      Arguments ...      arguments) {
-    auto cArgs =  sizeof ... (Arguments);
+    //auto cArgs =  sizeof ... (Arguments);
 
     auto env   = settings::IRMSEnvironmentImpl::Environment();
     if (!env || (env->LogOption() == modernapi::IRMSEnvironment::LoggerOption::Never)) {
       return;
     }
-
+    syslog(priority, format, arguments ...);
+#if 0
     if (cArgs > 0) {
       std::string buff(max_length, '-');
 #ifdef Q_OS_WIN32
@@ -60,47 +62,44 @@ public:
     } else {
       Logger::instance().append(prefix, record);
     }
+#endif
   }
 
   template<typename ... Arguments>
-  static void Info(const std::string& record, Arguments ... arguments) {
-    Logger::Append("INF", record, arguments ...);
+  static void Info(const char* format, Arguments ... arguments) {
+    Logger::Append(LOG_INFO, format, arguments ...);
   }
 
   template<typename ... Arguments>
-  static void Warning(const std::string& record, Arguments ... arguments) {
-    Logger::Append("WRN", record, arguments ...);
+  static void Warning(const char* format, Arguments ... arguments) {
+    Logger::Append(LOG_WARNING, format, arguments ...);
   }
 
   template<typename ... Arguments>
-  static void Error(const std::string& record, Arguments ... arguments) {
-    Logger::Append("ERR", record, arguments ...);
+  static void Error(const char* format, Arguments ... arguments) {
+    Logger::Append(LOG_ERR, format, arguments ...);
   }
 
   template<typename ... Arguments>
-  static void Hidden(const std::string& record, Arguments ... arguments) {
+  static void Hidden(const char* format, Arguments ... arguments) {
     // read env var
-    static QString ev = QProcessEnvironment::systemEnvironment().value(
-      "RMS_HIDDEN_LOG",
-      "OFF");
-
+    const char* env = getenv("RMS_HIDDEN_LOG");
     // if set
-    if (QString::compare(ev, "ON") == 0)
+    if (env && strcmp(env, "ON") == 0)
     {
-      Logger::Append("HDN", record, arguments ...);
+      Logger::Append(LOG_DEBUG, format, arguments ...);
     }
   }
 
-  virtual ~Logger() {}
+  //virtual ~Logger() {}
 
 protected:
 
-  virtual void append(const std::string& prefix,
-                      const std::string& record) = 0;
+  // virtual void append(const std::string& prefix, const std::string& record) = 0;
 
 private:
 
-  static Logger& instance();
+  // static Logger& instance();
 };
 } // namespace logger
 } // namespace platform

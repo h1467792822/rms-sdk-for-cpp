@@ -426,7 +426,7 @@ StatusCode HttpClientQt::doRequest(const string& url,
     Logger::Hidden("%s: %s", kv.first.c_str(), kv.second.c_str());
   }
   Logger::Hidden("--> Response Body:");
-  Logger::Hidden(string(response.begin(), response.end()));
+  Logger::Hidden(string(response.begin(), response.end()).c_str());
 
   if (errbuf[0] || nret != CURLE_OK) {
     Logger::Error("CURL error: %d, errmsg: %s", nret, errbuf);

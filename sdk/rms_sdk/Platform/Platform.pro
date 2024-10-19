@@ -8,5 +8,4 @@ SUBDIRS += \
     Filesystem \
     Json \
     Settings \
-    Xml \
-    Logger
+    Xml
