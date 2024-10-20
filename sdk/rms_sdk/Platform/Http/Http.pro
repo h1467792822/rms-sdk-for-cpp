@@ -15,8 +15,6 @@ CONFIG(debug, debug|release) {
     TARGET = $$join(TARGET,,,d)
 }
 
-LIBS += -lcurl
-
 SOURCES += \
     HttpClientQt.cpp \
     UriQt.cpp \
