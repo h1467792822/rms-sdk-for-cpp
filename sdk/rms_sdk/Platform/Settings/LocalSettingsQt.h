@@ -10,14 +10,14 @@
 #define LOCALSETTINGSQTIMPL
 
 #include"ILocalSettings.h"
-#include <QSettings>
+#include "../../../rmsutils/IniFile.h"
 
 namespace rmscore { namespace platform { namespace settings {
 
 class LocalSettingsQt : public ILocalSettings
 {
 public:
-    LocalSettingsQt(const QString& filename);
+    LocalSettingsQt(const std::string& filename);
     virtual std::string GetString(const std::string& container, const std::string& name, const std::string& defaultValue) override;
     virtual bool GetBool(const std::string& container, const std::string& name, bool bDefaultValue) override;
     virtual void SetBool(const std::string& container, const std::string& name, bool bValue) override;
@@ -26,7 +26,7 @@ public:
     virtual void SetInt(const std::string& container, const std::string& name, int nValue) override;
 
 private:
-    QSettings impl_;
+    rmsutils::IniFile impl_;
 };
 
 }}} // namespace rmscore { namespace platform { namespace settings {
