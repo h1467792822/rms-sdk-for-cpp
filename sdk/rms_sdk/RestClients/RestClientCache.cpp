@@ -18,7 +18,8 @@
 #include <sstream>
 #include <fstream>
 #include <future>
-#include <QStandardPaths>
+#include <cstdlib>
+//#include <QStandardPaths>
 
 using namespace std;
 using namespace rmscore::platform::logger;
@@ -361,9 +362,12 @@ void RestClientCache::StoreDnsClientResult(
 // static /////////////////////////////////////////////////////////////
 
 // the folder name, where we store the cache
-const string RestClientCache::cacheFolderName = (QStandardPaths::writableLocation(
-                                                   QStandardPaths::HomeLocation) +
-                                                 "/.ms-ad/").toStdString();
+//const string RestClientCache::cacheFolderName = (QStandardPaths::writableLocation(
+//                                                   QStandardPaths::HomeLocation) +
+//                                                 "/.ms-ad/").toStdString();
+//
+// TODO: now only support UNIX system 
+const string RestClientCache::cacheFolderName = std::string(getenv("HOME")) + "/.ms-ad/";
 
 // cache settings name constants
 const string RestClientCache::cacheSettingsContainerName =
