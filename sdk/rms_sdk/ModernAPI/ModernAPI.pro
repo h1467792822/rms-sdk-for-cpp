@@ -41,7 +41,6 @@ SOURCES += \
     PolicyDescriptor.cpp \
     ProtectedFileStream.cpp \
     CustomProtectedStream.cpp \
-    ext/QTStreamImpl.cpp \
     HttpHelper.cpp \
     IRMSEnvironment.cpp \
     roles.cpp

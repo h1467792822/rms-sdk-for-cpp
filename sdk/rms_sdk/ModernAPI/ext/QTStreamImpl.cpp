@@ -7,19 +7,24 @@
  */
 
 #include "QTStreamImpl.h"
-#include "../../Platform/Logger/Logger.h"
+
+// for test
+#include <QDataStream>
+
 using namespace rmscrypto::api;
-using namespace rmscore::platform::logger;
-using namespace std;
 
+rmscrypto::api::SharedStream CreateImpl(std::shared_ptr<QDataStream> stream) {
+  return QTStreamImpl::Create(stream);
+}
 
-SharedStream QTStreamImpl::Create(std::shared_ptr<QDataStream>stream) {
+#if 0
+SharedStream QTStreamImpl::Create(std::shared_ptr<DataStream> stream) {
   auto self = new QTStreamImpl(stream);
 
   return static_pointer_cast<IStream>(shared_ptr<QTStreamImpl>(self));
 }
 
-QTStreamImpl::QTStreamImpl(std::shared_ptr<QDataStream>stream)
+QTStreamImpl::QTStreamImpl(std::shared_ptr<DataStream> stream)
   : stream_(stream) {}
 
 shared_future<int64_t>QTStreamImpl::ReadAsync(uint8_t    *pbBuffer,
@@ -134,3 +139,6 @@ uint64_t QTStreamImpl::Size() {
 }
 
 void QTStreamImpl::Size(uint64_t /*u64Value*/) {}
+
+#endif
+
