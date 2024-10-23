@@ -18,8 +18,6 @@ class IDomDocument : public IDomNode
 {
 public:
     virtual sp<IDomElement>	documentElement() const = 0;
-    virtual sp<IDomElement>	elementById(const std::string & elementId) = 0;
-    virtual sp<DomNodeList> elementsByTagName(const std::string & tagname) const = 0;
 
     virtual bool setContent(const std::string & text, bool namespaceProcessing, std::string & errorMsg, int & errorLine, int & errorColumn) = 0;
     virtual bool setContent(const std::string & text, std::string & errorMsg, int & errorLine, int & errorColumn) = 0;

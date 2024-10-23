@@ -15,19 +15,14 @@ CONFIG(debug, debug|release) {
 }
 
 SOURCES += \
-    DomAttributeQt.cpp \
     DomDocumentQt.cpp \
-    DomElementQt.cpp \
-    DomNodeQt.cpp
+    DomElementQt.cpp
 
 HEADERS += \
     IDomDocument.h \
     IDomNode.h \
     IDomElement.h \
-    IDomAttribute.h \
     DomNamedNodeMap.h \
     DomNodeList.h \
-    DomAttributeQt.h \
     DomDocumentQt.h \
-    DomElementQt.h \
-    DomNodeQt.h
+    DomElementQt.h
