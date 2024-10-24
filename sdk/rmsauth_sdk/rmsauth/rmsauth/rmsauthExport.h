@@ -9,11 +9,12 @@
 #ifndef RMSAUTHEXPORT
 #define RMSAUTHEXPORT
 
-#include <QtGlobal>
+//#include <QtGlobal>
+// 无需考虑windows
 #if defined(RMSAUTH_LIBRARY)
-#  define RMSAUTH_EXPORT Q_DECL_EXPORT
+#  define RMSAUTH_EXPORT __attribute__((visibility("default")))
 #else
-#  define RMSAUTH_EXPORT Q_DECL_IMPORT
+#  define RMSAUTH_EXPORT __attribute__((visibility("default")))
 #endif
 
 #endif  // RMSAUTHEXPORT
