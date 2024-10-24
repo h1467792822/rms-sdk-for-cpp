@@ -8,11 +8,13 @@
 
 #include "PlatformXmlTest.h"
 #include "../../Platform/Logger/Logger.h"
-#include "../../Platform/Xml/IDomDocument.h"
-#include "../../Platform/Xml/IDomNode.h"
-#include "../../Platform/Xml/IDomElement.h"
+// #include "../../Platform/Xml/IDomDocument.h"
+// #include "../../Platform/Xml/IDomNode.h"
+// #include "../../Platform/Xml/IDomElement.h"
 #include <filesystem>
 #include <fstream>
+
+#include "../../../rmsutils/RMSXmlParser.h"
 
 using namespace std;
 using namespace rmscore::platform::logger;
@@ -50,20 +52,25 @@ void PlatformXmlTest::testSelectSingleNode(bool enabled)
 {
     if (!enabled) return;
 
-    auto doc = IDomDocument::create();
-    std::string errorMsg;
-    int errorLine = 0;
-    int errorColumn = 0;
+    // auto doc = IDomDocument::create();
+    // std::string errorMsg;
+    // int errorLine = 0;
+    // int errorColumn = 0;
 
     QFETCH(QString, xmlAsString);
     QFETCH(QString, xPathRequest);
     QFETCH(QString, expectedResult);
 
-    auto ok = doc->setContent(xmlAsString.toStdString(), errorMsg, errorLine, errorColumn);
-    QVERIFY2(ok, errorMsg.data());
+    // auto ok = doc->setContent(xmlAsString.toStdString(), errorMsg, errorLine, errorColumn);
+    // QVERIFY2(ok, errorMsg.data());
 
-    auto pnode = doc->SelectSingleNode(xPathRequest.toStdString());
-    auto realResult = pnode->toElement()->text();
+    // auto pnode = doc->SelectSingleNode(xPathRequest.toStdString());
+    // auto realResult = pnode->toElement()->text();
+
+    rmsutils::RMSXmlParser parser;
+    parser.setXmlRoot(xmlAsString.toStdString());
+    auto realResult = parser.SelectSingleNode(xPathRequest.toStdString());
+
     Logger::Hidden("expc: %s", expectedResult.toStdString().data());
     Logger::Hidden("real: %s", realResult.data());
     QVERIFY(realResult == expectedResult.toStdString());

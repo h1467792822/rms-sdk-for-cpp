@@ -18,12 +18,12 @@ LIBS        += -L$$REPO_ROOT/bin/ -L$$REPO_ROOT/bin/rms/ -L$$REPO_ROOT/bin/rms/p
 CONFIG(debug, debug|release) {
     TARGET = $$join(TARGET,,,d)
     LIBS += -lmodprotectedfiled -lmodcored -lmodrestclientsd -lmodconsentd -lmodcommond -lmodjsond
-    LIBS += -lplatformhttpd -lplatformloggerd -lplatformxmld -lplatformjsond -lplatformfilesystemd -lplatformsettingsd
+    LIBS += -lplatformhttpd -lplatformjsond -lplatformfilesystemd -lplatformsettingsd
     LIBS += -ludns -lcurl
     LIBS += -lrmscryptod
 } else {
     LIBS += -lmodprotectedfile -lmodcore -lmodrestclients -lmodconsent -lmodcommon -lmodjson
-    LIBS += -lplatformhttp -lplatformlogger -lplatformxml -lplatformjson -lplatformfilesystem -lplatformsettings
+    LIBS += -lplatformhttp -lplatformjson -lplatformfilesystem -lplatformsettings
     LIBS += -ludns -lcurl
 #link third-part library at the end to prevent logger implementation conflict
     LIBS += -lrmscrypto

@@ -10,8 +10,8 @@
 #include "../Common/CommonTypes.h"
 #include "../Core/FeatureControl.h"
 #include "../ModernAPI/RMSExceptions.h"
-#include "../Platform/Xml/IDomDocument.h"
-#include "../Platform/Xml/IDomElement.h"
+// #include "../Platform/Xml/IDomDocument.h"
+// #include "../Platform/Xml/IDomElement.h"
 #include "../Platform/Logger/Logger.h"
 #include "../../rmsutils/Guard.h"
 //#include <QCoreApplication>
@@ -19,6 +19,8 @@
 #include <iconv.h>
 #include "CXMLUtils.h"
 #include "LicenseParser.h"
+
+#include "../../rmsutils/RMSXmlParser.h"
 
 using namespace std;
 using namespace rmscore::platform::logger;
@@ -108,28 +110,34 @@ const shared_ptr<LicenseParserResult> LicenseParser::ParsePublishingLicenseInner
     string publishLicenseWithRoot;
     CXMLUtils::WrapWithRoot(publishLicense.c_str(), finalSize, publishLicenseWithRoot);
 
-    auto document = IDomDocument::create();
-    std::string errMsg;
-    int errLine   = 0;
-    int errColumn = 0;
+    // auto document = IDomDocument::create();
+    // std::string errMsg;
+    // int errLine   = 0;
+    // int errColumn = 0;
 
-    auto ok = document->setContent(publishLicenseWithRoot,
-                                 errMsg,
-                                 errLine,
-                                 errColumn);
+    // auto ok = document->setContent(publishLicenseWithRoot,
+    //                              errMsg,
+    //                              errLine,
+    //                              errColumn);
 
-    if (!ok) 
-    {
-        throw exceptions::RMSNetworkException("Invalid publishing license",
-                                          exceptions::RMSNetworkException::InvalidPL);
-    }
+    // if (!ok) 
+    // {
+    //     throw exceptions::RMSNetworkException("Invalid publishing license",
+    //                                       exceptions::RMSNetworkException::InvalidPL);
+    // }
 
-    auto extranetDomainNode = document->SelectSingleNode(EXTRANET_XPATH);
-    auto intranetDomainNode = document->SelectSingleNode(INTRANET_XPATH);
+    // auto extranetDomainNode = document->SelectSingleNode(EXTRANET_XPATH);
+    // auto intranetDomainNode = document->SelectSingleNode(INTRANET_XPATH);
 
-    auto extranetDomain = (nullptr != extranetDomainNode.get()) ? extranetDomainNode->text() : string();
+    // auto extranetDomain = (nullptr != extranetDomainNode.get()) ? extranetDomainNode->text() : string();
+
+    rmsutils::RMSXmlParser parser;
+    parser.setXmlRoot(publishLicenseWithRoot);
+    auto extranetDomain = parser.SelectSingleNode(EXTRANET_XPATH);
     RemoveTrailingNewLine(extranetDomain);
-    auto intranetDomain = (nullptr != intranetDomainNode.get()) ? intranetDomainNode->text() : string();
+    // auto intranetDomain = (nullptr != intranetDomainNode.get()) ? intranetDomainNode->text() : string();
+
+    auto intranetDomain = parser.SelectSingleNode(INTRANET_XPATH);
     RemoveTrailingNewLine(intranetDomain);
     vector<shared_ptr<Domain> > domains;
 
@@ -156,13 +164,15 @@ const shared_ptr<LicenseParserResult> LicenseParser::ParsePublishingLicenseInner
     shared_ptr<LicenseParserResult> result;
     if (rmscore::core::FeatureControl::IsEvoEnabled())
     {
-        auto slcNode = document->SelectSingleNode(SLC_XPATH);
-        if (nullptr == slcNode.get())
-        {
-            throw exceptions::RMSNetworkException("Server public certificate",
-                                              exceptions::RMSNetworkException::InvalidPL);
-        }
-        auto publicCertificate = slcNode->text();
+        // auto slcNode = document->SelectSingleNode(SLC_XPATH);
+        // auto slcNode 
+        // if (nullptr == slcNode.get())
+        // {
+        //     throw exceptions::RMSNetworkException("Server public certificate",
+        //                                       exceptions::RMSNetworkException::InvalidPL);
+        // }
+        // auto publicCertificate = slcNode->text();
+        auto publicCertificate= parser.SelectSingleNode(SLC_XPATH);
         RemoveTrailingNewLine(publicCertificate);
 
         result = make_shared<LicenseParserResult>(LicenseParserResult(domains,

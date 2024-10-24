@@ -7,5 +7,4 @@ SUBDIRS += \
     Common \
     Filesystem \
     Json \
-    Settings \
-    Xml
+    Settings
