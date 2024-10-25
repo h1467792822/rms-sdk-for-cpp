@@ -10,6 +10,8 @@
 #include <clocale>
 #include <cctype>
 #include <algorithm>
+#include <openssl/evp.h>
+#include <stdexcept>
 
 namespace rmsauth {
 
@@ -117,6 +119,25 @@ String StringUtils::replaceAll(const String& src, const char form, const char to
     String result(src);
     std::replace(result.begin(), result.end(), form, to);
     return std::move(result);
+}
+
+String StringUtils::base64Decode(const String& base64Input)
+{
+    size_t decodedSize (base64Input.size() * 3 / 4);
+    std::vector<uint8_t> decodedData(decodedSize);
+    int result = EVP_DecodeBlock(decodedData.data(), reinterpret_cast<const unsigned char*>(base64Input.data()), static_cast<int>(base64Input.size()));
+    if (result < 0) {
+        throw std::runtime_error("Base64 decoding failed.");
+    }
+    decodedData.resize(result);
+    return String(decodedData.begin(), decodedData.end());
+}
+
+String StringUtils::base64Encode(const String& input) {
+    size_t encodedSize = 4 * ((input.size() + 2) / 3);
+    std::vector<uint8_t> encodedData(encodedSize);
+    EVP_EncodeBlock(encodedData.data(), reinterpret_cast<const unsigned char*>(input.data()), static_cast<int>(input.size()));
+    return std::string(encodedData.begin(), encodedData.end());
 }
 
 } // namespace rmsauth {
