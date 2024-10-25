@@ -36,7 +36,8 @@
 // #include <QtCore/QDir>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMetaObject>
-#include <QtDebug>
+// #include <QtDebug>
+#include <iostream>
 
 #define AUTOSAVE_IN  1000 * 3  // seconds
 #define MAXWAIT      1000 * 15 // seconds
@@ -49,7 +50,8 @@ AutoSaver::AutoSaver(QObject *parent) : QObject(parent)
 AutoSaver::~AutoSaver()
 {
     if (m_timer.isActive())
-        qWarning() << "AutoSaver: still active when destroyed, changes not saved.";
+        // qWarning() << "AutoSaver: still active when destroyed, changes not saved.";
+        std::cerr << "AutoSaver: still active when destroyed, changes not saved." << std::endl;
 }
 
 void AutoSaver::changeOccurred()
@@ -85,7 +87,8 @@ void AutoSaver::saveIfNeccessary()
     m_timer.stop();
     m_firstChange = std::chrono::steady_clock::now();
     if (!QMetaObject::invokeMethod(parent(), "save", Qt::DirectConnection)) {
-        qWarning() << "AutoSaver: error invoking slot save() on parent";
+        // qWarning() << "AutoSaver: error invoking slot save() on parent";
+        std::cerr << "AutoSaver: error invoking slot save() on parent" << std::endl;
     }
 }
 
