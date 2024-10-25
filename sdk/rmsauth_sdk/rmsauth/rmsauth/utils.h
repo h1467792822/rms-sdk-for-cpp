@@ -27,6 +27,8 @@ public:
     static String replace(const String& src, const String& form, const String& to);
     static String replaceAll(const String& src, const String& form, const String& to);
     static String replaceAll(const String& src, const char form, const char to);
+    static String base64Decode(const String& base64Input);
+    static String base64Encode(const String& input);
 };
 
 class HashUtils
