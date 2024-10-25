@@ -166,13 +166,12 @@ const shared_ptr<LicenseParserResult> LicenseParser::ParsePublishingLicenseInner
     {
         // auto slcNode = document->SelectSingleNode(SLC_XPATH);
         // auto slcNode 
-        // if (nullptr == slcNode.get())
-        // {
-        //     throw exceptions::RMSNetworkException("Server public certificate",
-        //                                       exceptions::RMSNetworkException::InvalidPL);
-        // }
-        // auto publicCertificate = slcNode->text();
         auto publicCertificate= parser.SelectSingleNode(SLC_XPATH);
+        if (publicCertificate == "") {
+            throw exceptions::RMSNetworkException("Server public certificate",
+                                            exceptions::RMSNetworkException::InvalidPL);
+        }
+        // auto publicCertificate = slcNode->text();
         RemoveTrailingNewLine(publicCertificate);
 
         result = make_shared<LicenseParserResult>(LicenseParserResult(domains,

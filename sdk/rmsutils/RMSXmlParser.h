@@ -140,11 +140,7 @@ class RMSXmlParser {
 
             string ret;
             for (size_t i = 0; i < splitStrs.size(); i++) {
-                if (splitStrs[i] == exclude) {
-                    continue;
-                }
-
-                if (splitStrs[i] == split) {
+                if (splitStrs[i] == exclude || splitStrs[i] == split) {
                     ret += splitStrs[i];
                 } else {
                     ret += xmlNs + ":" + splitStrs[i];
