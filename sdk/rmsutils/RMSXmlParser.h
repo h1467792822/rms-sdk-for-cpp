@@ -2,6 +2,7 @@
 #define RMS_XML_PARSER_H_
 
 #include <string>
+#include <vector>
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
@@ -9,6 +10,7 @@
 #include "../../rms_sdk/Platform/Logger/Logger.h"
 
 using namespace rmscore::platform::logger;
+using namespace std;
 
 namespace rmsutils {
 class RMSXmlParser {
@@ -32,12 +34,18 @@ class RMSXmlParser {
                 return std::string();
             }
 
-            std::string nameStr("xmlns");
-            xmlChar* xmlns = xmlGetProp(rootNode, (xmlChar *)nameStr.c_str());
-            if (xmlns == nullptr) {
-                Logger::Error("RMSXmlParser::SelectSingleNode: %s", "get xmlns result is empty.");
-                return std::string();
-            }
+            printNode(rootNode);
+
+            // xmlChar* xmlns = xmlGetNsProp(rootNode, (xmlChar *)"xmlns", NULL);
+            // if (xmlns == nullptr) {
+            //     Logger::Error("RMSXmlParser::xmlGetNsProp rootNode: %s, type: %d", rootNode->name, rootNode->type);
+            //     Logger::Error("RMSXmlParser::SelectSingleNode: %s", "get xmlns result is empty.");
+            //     return std::string();
+            // }
+
+            const xmlChar* xmlns = (rootNode->ns == nullptr) ? nullptr : rootNode->ns->href;
+
+            Logger::Info("RMSXmlParser::get xmlns: %s", xmlns);
 
             xmlXPathContextPtr context = xmlXPathNewContext(doc);
             if (context == nullptr) {
@@ -45,19 +53,33 @@ class RMSXmlParser {
                 return std::string();
             }
 
-            int regRet = xmlXPathRegisterNs(context, BAD_CAST "ns", BAD_CAST xmlns);
-            if (regRet != 0) {
-                Logger::Error("RMSXmlParser::SelectSingleNode: xmlXPathRegisterNs error %d.", regRet);
-                xmlXPathFreeContext(context);
-                return std::string();
+            if (xmlns != nullptr) {
+                int regRet = xmlXPathRegisterNs(context, BAD_CAST "ns", BAD_CAST xmlns);
+                if (regRet != 0) {
+                    Logger::Error("RMSXmlParser::SelectSingleNode: xmlXPathRegisterNs error %d.", regRet);
+                    xmlXPathFreeContext(context);
+                    return std::string();
+                }
             }
 
-            xmlXPathObjectPtr result = xmlXPathEvalExpression(BAD_CAST xPath.c_str(), context);
+            std::string xPathPattern("");
+            if (xmlns != nullptr) {
+                // std::string xmlnsStr(static_cast<const char*>(static_cast<void*>(const_cast<unsigned char*>(xmlns))));
+                // xPathPattern = "/ns:" + xPath;
+                // xPathPattern = "/ns:kml/ns:Document/ns:Placemark[last()]/ns:GeometryCollection/ns:LineString/ns:coordinates/text()";
+                xPathPattern = "/" + constructXPathPattern(xPath, "/", "ns", "text()");
+            } else {
+                xPathPattern = "/" + xPath;
+            }
+            Logger::Error("RMSXmlParser::xPathPattern: %s", xPathPattern.c_str());
+            xmlXPathObjectPtr result = xmlXPathEvalExpression(BAD_CAST xPathPattern.c_str(), context);
             if (result == nullptr) {
                 Logger::Error("RMSXmlParser::SelectSingleNode:%s", " xmlXPathEvalExpression error.");
                 xmlXPathFreeContext(context);
                 return std::string();
             }
+
+            printxmlXPathObject(result);
 
             if (xmlXPathNodeSetIsEmpty(result->nodesetval)) {
                 Logger::Error("RMSXmlParser::SelectSingleNode:%s", " xmlXPathNodeSetIsEmpty error.");
@@ -67,10 +89,100 @@ class RMSXmlParser {
             }
 
             std::string resultStr = std::string((char *)xmlNodeGetContent(result->nodesetval->nodeTab[0]));
+            Logger::Info("RMSXmlParser::xmlNodeGetContent: %s", resultStr.c_str());
+
             xmlXPathFreeObject(result);
             xmlXPathFreeContext(context);
 
             return resultStr;
+        }
+    private:
+        void printNode(const xmlNodePtr& node) {
+            if (node == nullptr) {
+                Logger::Error("printNode %s", "node null!");
+                return;
+            }
+
+            Logger::Info("print node name: %s, associated ns: %s : %s, def ns: %s : %s",
+            node->name, node->ns == nullptr ? (xmlChar *)"null" : node->ns->href, node->ns == nullptr ? (xmlChar *)"null" : node->ns->prefix,
+            node->nsDef == nullptr ? (xmlChar *)"null" : node->nsDef->href, node->nsDef == nullptr ? (xmlChar *)"null" : node->nsDef->prefix);
+
+            if (node->properties == nullptr) {
+                Logger::Error("printNode %s", "properties null!");
+                return;
+            }
+
+            xmlAttrPtr attr = node->properties;
+            while (attr != nullptr) {
+                char* attrName = (char *)attr->name;
+                char* attrValue = (char *)xmlGetProp(node, attr->name);
+
+                Logger::Info("print xmlAttrPtr name: %s, value: %s", attrName, attrValue);
+
+                xmlFree(attrValue);
+
+                attr = attr->next;
+            }
+        }
+
+        void printxmlXPathObject(const xmlXPathObjectPtr& obj) {
+            if (obj == nullptr) {
+                Logger::Error("printxmlXPathObject %s", "obj null!");
+                return;
+            }
+
+            Logger::Info("printxmlXPathObject type:%d, value: %s ", obj->type, obj->stringval);
+        }
+
+        string constructXPathPattern(string xPath, const string& split, const string& xmlNs, const string& exclude) {
+            vector<string> splitStrs;
+            splitString(xPath, split, splitStrs);
+
+            string ret;
+            for (size_t i = 0; i < splitStrs.size(); i++) {
+                if (splitStrs[i] == exclude) {
+                    continue;
+                }
+
+                if (splitStrs[i] == split) {
+                    ret += splitStrs[i];
+                } else {
+                    ret += xmlNs + ":" + splitStrs[i];
+                }
+            }
+
+            Logger::Info("constructXPathPattern string: %s ", ret.c_str());
+            return ret;
+        }
+
+        void splitString(const string& str, const string& split, vector<string>& res) {
+            if (str == "") {
+                return;
+            }
+
+            string strs = str;
+            size_t pos = strs.find(split);
+            while (pos != strs.npos)
+            {
+                string tmp = strs.substr(0, pos);
+                if (tmp == "") {
+                    res.push_back(split);
+                } else {
+                    res.push_back(tmp);
+                    res.push_back(split);
+                }
+
+                strs = strs.substr(pos + 1);
+                pos = strs.find(split);
+            }
+
+            if (strs != split) {
+                res.push_back(strs);
+            }
+
+            // for(size_t i = 0; i < res.size(); i++) {
+            //     Logger::Info("split string: %s ", res[i].c_str());
+            // }
         }
 
     private:
