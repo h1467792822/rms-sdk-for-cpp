@@ -16,7 +16,7 @@
 #include <Logger.h>
 #include "JsonUtilsQt.h"
 #include "../../rmsutils/DateTime.h"
-#include <QByteArray>
+// #include <QByteArray>
 #include <QUrl>
 #include <QUrlQuery>
 #include <nlohmann/json.hpp>
@@ -124,9 +124,10 @@ IdTokenPtr OAuth2Response::parseIdToken(const String& idToken)
             throw RmsauthException("idTokenSegments.size() != 3");
         }
 
-        QByteArray ba;
-        ba.append(idTokenSegments[1].data());
-        String jsonString = QByteArray::fromBase64(ba).data();
+        // QByteArray ba;
+        // ba.append(idTokenSegments[1].data());
+        // String jsonString = QByteArray::fromBase64(ba).data();
+        String jsonString = StringUtils::base64Decode(idTokenSegments[1]);
 
 	nlohmann::json qobj;
 	try {
