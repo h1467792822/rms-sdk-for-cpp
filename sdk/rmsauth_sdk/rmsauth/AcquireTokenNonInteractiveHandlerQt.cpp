@@ -7,19 +7,20 @@
 */
 
 #include <AcquireTokenNonInteractiveHandler.h>
-#include <QByteArray>
+// #include <QByteArray>
 #include <types.h>
 #include <OAuthConstants.h>
+#include <utils.h>
 
 namespace rmsauth {
-
+    
 void AcquireTokenNonInteractiveHandler::addAditionalRequestParameters(RequestParameters& requestParameters)
 {
     if (userAssertion_ != nullptr)
     {
         requestParameters.addParam(OAuthConstants::oAuthParameter().GrantType, userAssertion_->assertionType());
-        QByteArray qbaBase64Assertion = QByteArray(userAssertion_->assertion().data(), (int)userAssertion_->assertion().size()).toBase64();
-        requestParameters.addParam(OAuthConstants::oAuthParameter().Assertion, String(qbaBase64Assertion.begin(), qbaBase64Assertion.end()));
+        // QByteArray qbaBase64Assertion = QByteArray(userAssertion_->assertion().data(), (int)userAssertion_->assertion().size()).toBase64();
+        requestParameters.addParam(OAuthConstants::oAuthParameter().Assertion, StringUtils::base64Encode(userAssertion_->assertion()));
     }
     else
     {
