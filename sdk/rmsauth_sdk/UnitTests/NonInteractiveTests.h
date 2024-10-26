@@ -24,6 +24,7 @@ public:
 
 private Q_SLOTS:
 
+  void OAuth2ResponseTest();
   void AuthenticationResultTest_data();
   void AuthenticationResultTest();
   void CacheTest_data();

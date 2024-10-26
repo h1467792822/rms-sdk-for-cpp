@@ -14,6 +14,7 @@
 #include <Authenticator.h>
 #include <CallState.h>
 #include <OAuthConstants.h>
+#include <OAuth2Response.h>
 #include <AuthenticationResult.h>
 #include <AuthenticationContext.h>
 #include <Exceptions.h>
@@ -21,6 +22,7 @@
 #include <FileCacheEncrypted.h>
 #include <UserCredential.h>
 #include <ClientCredential.h>
+#include <cassert>
 
 Q_DECLARE_METATYPE(rmsauth::String)
 
@@ -36,6 +38,24 @@ NonInteractiveTests::NonInteractiveTests(QString clientId,
   : clientId_(clientId), resource_(resource), authority_(authority),
     userName_(userName), password_(password), clientSecret_(clientSecret)
 {}
+
+void NonInteractiveTests::OAuth2ResponseTest()
+{
+  qDebug() << "====== NonInteractiveTests::OAuth2ResponseTest() ======";
+  String url1 = "https://example.com";
+  String url2 = "https://example.com/?code=codeTest&other=value";
+  String url3 = "https://example.com/?error=errorTest";
+  String url4 = "https://example.com/?error=errorTest&error_description=errorDescription";
+
+  AuthorizationResultPtr authorizationResultPtr1 = OAuth2Response::parseAuthorizeResponse(url1, CallStatePtr());
+  assert(authorizationResultPtr1 == nullptr);
+  AuthorizationResultPtr authorizationResultPtr2 = OAuth2Response::parseAuthorizeResponse(url2, CallStatePtr());
+  assert(authorizationResultPtr2->code() == "codeTest");
+  AuthorizationResultPtr authorizationResultPtr3 = OAuth2Response::parseAuthorizeResponse(url3, CallStatePtr());
+  assert(authorizationResultPtr3->error() == "errorTest" && authorizationResultPtr3->errorDescription() == "");
+  AuthorizationResultPtr authorizationResultPtr4 = OAuth2Response::parseAuthorizeResponse(url4, CallStatePtr());
+  assert(authorizationResultPtr4->error() == "errorTest" && authorizationResultPtr4->errorDescription() == "errorDescription");
+}
 
 void NonInteractiveTests::AuthenticationResultTest_data()
 {

@@ -17,8 +17,9 @@
 #include "JsonUtilsQt.h"
 #include "../../rmsutils/DateTime.h"
 // #include <QByteArray>
-#include <QUrl>
-#include <QUrlQuery>
+// #include <QUrl>
+// #include <QUrlQuery>
+#include <regex>
 #include <nlohmann/json.hpp>
 
 namespace rmsauth {
@@ -163,20 +164,23 @@ AuthorizationResultPtr OAuth2Response::parseAuthorizeResponse(const String& webA
 
     AuthorizationResultPtr parseResult = nullptr;
 
-    QUrl url(webAuthenticationResult.data());
-    if (url.hasQuery())
-    {
-        QUrlQuery query = QUrlQuery(url);
-        if( query.hasQueryItem(OAuthConstants::oAuthReservedClaim().Code.data()) )
-        {
-            parseResult = std::make_shared<AuthorizationResult>(query.queryItemValue(OAuthConstants::oAuthReservedClaim().Code.data()).toStdString());
-        }
-        else if( query.hasQueryItem(OAuthConstants::oAuthReservedClaim().Error.data()) )
-        {
-            String error = query.queryItemValue(OAuthConstants::oAuthReservedClaim().Error.data()).toStdString();
-            String errorDesc = query.hasQueryItem(OAuthConstants::oAuthReservedClaim().ErrorDescription.data())
-                ? query.queryItemValue(OAuthConstants::oAuthReservedClaim().ErrorDescription.data(), QUrl::FullyDecoded).toStdString()
-                : "";
+    std::smatch matches;
+
+    String url(webAuthenticationResult);
+    if (url.find('?') != std::string::npos) {
+        String queryWith = "=([^&#]+)";
+        String code_string = OAuthConstants::oAuthReservedClaim().Code + queryWith;
+        std::regex code_regex(code_string);
+        String error_string = OAuthConstants::oAuthReservedClaim().Error + queryWith;
+        std::regex error_regex(error_string);
+
+        if (std::regex_search(url, matches, code_regex) && matches.size() > 1) {
+            parseResult = std::make_shared<AuthorizationResult>(matches[1].str());
+        } else if (std::regex_search(url, matches, error_regex) && matches.size() > 1) {
+            String error = matches[1].str();
+            String errorDescription_string = OAuthConstants::oAuthReservedClaim().ErrorDescription + queryWith;
+            std::regex errorDescription_regex(errorDescription_string);
+            String errorDesc = (std::regex_search(url, matches, errorDescription_regex) && matches.size() > 1) ? matches[1].str() : "";
             parseResult = std::make_shared<AuthorizationResult>(
                 error,
                 StringUtils::replaceAll(errorDesc, '+', ' '));
