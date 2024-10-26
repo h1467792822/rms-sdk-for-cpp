@@ -7,8 +7,9 @@
 */
 
 #include <Logger.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../../rmsutils/DateTime.h"
-#include <QProcessEnvironment>
 
 namespace rmsauth {
 
@@ -21,9 +22,9 @@ String LoggerImpl::getLocalTime(const String& format)
 void Logger::hidden(const String& tag, const String& record)
 {
     // read env var
-    static QString ev = QProcessEnvironment::systemEnvironment().value("RMS_HIDDEN_LOG", "OFF");
+    const char* env = getenv("RMS_HIDDEN_LOG");
     // if set
-    if(QString::compare(ev, "ON") == 0)
+    if(env && strcmp(env, "ON") == 0)
     {
         Logger::record("HDN", tag, record);
     }
