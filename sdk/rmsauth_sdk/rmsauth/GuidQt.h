@@ -10,7 +10,9 @@
 #define GUIDQT_H
 
 #include <Guid.h>
-#include <QUuid>
+// #include <QUuid>
+#include <array>
+#include <string>
 
 namespace rmsauth {
 
@@ -18,15 +20,16 @@ class GuidQt : public IGuid
 {
 public:
     GuidQt();
-    explicit GuidQt(const QString& str);
-    explicit GuidQt(const QUuid&);
+    explicit GuidQt(const std::string& str);
 
-private:
-    QUuid uuid_;
-
-    virtual String toString() const override;
+    virtual std::string toString() const override;
     virtual bool empty() const override;
 
+    static GuidQt newGuid();
+
+private:
+    std::array<unsigned char, 16> data;
+    void parse(const std::string& str);
 };
 
 } // namespace rmsauth {
