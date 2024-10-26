@@ -16,17 +16,26 @@
 #include <Logger.h>
 #include "JsonUtilsQt.h"
 #include "HttpHelperQt.h"
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QEventLoop>
-#include <QUuid>
-#include <QCoreApplication>
-#include <QTimer>
+// #include <QNetworkAccessManager>
+// #include <QNetworkRequest>
+// #include <QNetworkReply>
+// #include <QEventLoop>
+// #include <QUuid>
+// #include <QCoreApplication>
+// #include <QTimer>
 #include <nlohmann/json.hpp>
+#include <thread>
+#include <chrono>
+#include <openssl/bio.h>
+#include <openssl/pem.h>
+#include <openssl/x509.h>
+#include <algorithm>
+#include <curl/curl.h>
+#include "../../rmsutils/Guard.h"
 
 namespace rmsauth {
 
+# if 0
 QByteArray HttpHelperQt::jobGet(QNetworkRequest& request, CallStatePtr callState)
 {
     Logger::info(Tag(), "jobGet");
@@ -86,7 +95,11 @@ QByteArray HttpHelperQt::jobGetRunner(QNetworkRequest& request, CallStatePtr cal
 
     auto body = jobGet(request, callState);
 
-    QTimer::singleShot(0, &a, SLOT(quit()));
+    // QTimer::singleShot(0, &a, SLOT(quit()));
+    std::thread([&a]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(0));
+        a.quit();
+    })
     a.exec();
 
     return std::move(body);
@@ -142,7 +155,11 @@ QByteArray HttpHelperQt::jobPostRunner(QNetworkRequest& request, const RequestPa
     auto body = jobPost(request, requestParameters, callState);
 
 
-    QTimer::singleShot(0, &a, SLOT(quit()));
+    // QTimer::singleShot(0, &a, SLOT(quit()));
+    std::thread([&a]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(0));
+        a.quit();
+    })
     a.exec();
 
     return std::move(body);
@@ -356,6 +373,7 @@ void HttpHelperQt::addHeadersToRequest(QNetworkRequest& request, const Headers& 
         request.setRawHeader(header.first.data(), header.second.data());
     }
 }
+
 void  HttpHelperQt::logRequestHeaders(const QNetworkRequest& req)
 {
     Logger::info(Tag(), "logRequestHeaders");
@@ -392,6 +410,335 @@ void HttpHelperQt::logResponseBody(const QByteArray& body)
     {
         Logger::hidden(Tag(), "==> Body:");
         Logger::hidden(Tag(), String(body.begin(), body.end()));
+    }
+}
+#endif
+size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
+
+void HttpHelperQt::addHeadersToRequest(Headers& headers, const Headers& newHeaders)
+{
+    headers.insert(newHeaders.begin(), newHeaders.end());
+}
+
+String HttpHelperQt::jobGet(const String& url, const Headers& headers, CallStatePtr callState)
+{
+    Logger::info(Tag(), "jobGet");
+
+    Headers requestHeaders = headers;
+    HttpHelperQt::addCorrelationIdHeadersToRequest(requestHeaders, callState);
+    HttpHelperQt::logRequestHeaders(requestHeaders);
+
+    CURL *curl;
+    CURLcode res;
+    std::string readBuffer;
+    std::string headerBuffer;
+
+    curl = curl_easy_init();
+    if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+        curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerBuffer);
+
+        struct curl_slist *chunk = NULL;
+        for (const auto& header : requestHeaders) {
+            String headerStr = header.first + ": " + header.second;
+            chunk = curl_slist_append(chunk, headerStr.c_str());
+        }
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+
+        res = curl_easy_perform(curl);
+        
+        long response_code;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+        
+        curl_slist_free_all(chunk);
+        curl_easy_cleanup(curl);
+
+        HttpHelperQt::logResponseHeaders(headerBuffer);
+
+        if(res != CURLE_OK) {
+            throw RmsauthServiceException(curl_easy_strerror(res));
+        }
+        
+        if(response_code != 200) {
+            ErrorResponsePtr errorResponse = HttpHelperQt::parseResponseError(readBuffer);
+            if (errorResponse->error == "invalid_instance") {
+                throw RmsauthServiceException(Constants::rmsauthError().AuthorityNotInValidList, errorResponse->errorDescription);
+            } else {
+                StringStream ss;
+                ss << Constants::rmsauthErrorMessage().AuthorityValidationFailed << ". "
+                   << errorResponse->error << ": "
+                   << errorResponse->errorDescription;
+                throw RmsauthServiceException(Constants::rmsauthError().AuthorityValidationFailed, ss.str());
+            }
+        }
+    }
+
+    HttpHelperQt::logResponseBody(readBuffer);
+    return readBuffer;
+}
+
+InstanceDiscoveryResponsePtr HttpHelperQt::deserializeInstanceDiscoveryResponse(const String& body)
+{
+    Logger::info(Tag(), "deserializeInstanceDiscoveryResponse");
+
+    auto pInstanceDiscoveryResponse = std::make_shared<InstanceDiscoveryResponse>();
+
+    StringStream ss; ss << "jsonObject: " << body;
+    Logger::hidden(Tag(), ss.str());
+
+    nlohmann::json qobj;
+    try {
+        qobj = nlohmann::json::parse(body);
+    }
+    catch(std::exception& e)
+    {
+        throw RmsauthException(String("deserializeInstanceDiscoveryResponse fromJson: ") + e.what());
+    }
+
+    pInstanceDiscoveryResponse->tenantDiscoveryEndpoint = JsonUtilsQt::getStringOrDefault(qobj, InstanceDiscoveryResponse::jsonNames().tenantDiscoveryEndpoint);
+
+    return pInstanceDiscoveryResponse;
+}
+
+
+String HttpHelperQt::jobPost(const String& url, const Headers& headers, const RequestParameters& requestParameters, CallStatePtr callState)
+{
+    Logger::info(Tag(), "jobPost");
+
+    Headers requestHeaders = headers;
+    if ((callState != nullptr) && !callState->correlationId().empty()) {
+        HttpHelperQt::addCorrelationIdHeadersToRequest(requestHeaders, callState);
+    }
+    HttpHelperQt::logRequestHeaders(requestHeaders);
+    Logger::info(Tag(), "request url:  %", url);
+    Logger::info(Tag(), "request body: %", requestParameters.toString());
+
+    CURL *curl;
+    CURLcode res;
+    std::string readBuffer;
+    std::string headerBuffer;
+
+    curl = curl_easy_init();
+    if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, requestParameters.toString().c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+        curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerBuffer);
+
+        struct curl_slist *chunk = NULL;
+        for (const auto& header : requestHeaders) {
+            String headerStr = header.first + ": " + header.second;
+            chunk = curl_slist_append(chunk, headerStr.c_str());
+        }
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+
+        res = curl_easy_perform(curl);
+        
+        long response_code;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+        
+        curl_slist_free_all(chunk);
+        curl_easy_cleanup(curl);
+
+        HttpHelperQt::logResponseHeaders(headerBuffer);
+
+        if(res != CURLE_OK) {
+            String errString = "error: " + String(curl_easy_strerror(res));
+            Logger::error(Tag(), errString);
+            throw RmsauthServiceException(errString);
+        }
+        
+        if(response_code != 200) {
+            ErrorResponsePtr errorResponse = HttpHelperQt::parseResponseError(readBuffer);
+            StringStream ss;
+            ss << "HTTP error " << response_code << ": " << errorResponse->error << " - " << errorResponse->errorDescription;
+            Logger::error(Tag(), ss.str());
+            throw RmsauthServiceException(ss.str());
+        }
+    }
+
+    HttpHelperQt::logResponseBody(readBuffer);
+    return readBuffer;
+}
+
+TokenResponsePtr HttpHelper::sendPostRequestAndDeserializeJsonResponseAsync(const String& url, const RequestParameters& requestParameters, CallStatePtr callState)
+{
+    Logger::info(Tag(), "sendPostRequestAndDeserializeJsonResponseAsync");
+
+    Headers headers;
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
+    HttpHelperQt::addHeadersToRequest(headers, RmsauthIdHelper::getProductHeaders());
+
+    auto fut = std::async(std::launch::async, [&]() {
+        return HttpHelperQt::jobPost(url, headers, requestParameters, callState);
+    });
+    auto body = fut.get();
+    return HttpHelperQt::deserializeTokenResponse(body);
+}
+
+void HttpHelperQt::addCorrelationIdHeadersToRequest(Headers& headers, CallStatePtr callState)
+{
+    Logger::info(Tag(), "addCorrelationIdHeadersToRequest");
+    headers[OAuthConstants::oAuthHeader().CorrelationId] = callState->correlationId().toString();
+    headers[OAuthConstants::oAuthHeader().RequestCorrelationIdInResponse] = "true";
+}
+
+
+ErrorResponsePtr HttpHelperQt::parseResponseError(const String& jsonBody)
+{
+    Logger::info(Tag(), "parseResponseError");
+
+    auto pErrorResponse = std::make_shared<ErrorResponse>();
+
+    Logger::info(Tag(), "jsonObject: %", jsonBody);
+
+    if (jsonBody.empty())
+    {
+        pErrorResponse->error = Constants::rmsauthError().ServiceReturnedError;
+        pErrorResponse->errorDescription = Constants::rmsauthErrorMessage().ServiceReturnedError;
+    }
+    else
+    {
+        nlohmann::json qobj;
+        try {
+            qobj = nlohmann::json::parse(jsonBody);
+        }
+        catch(std::exception& e)
+        {
+            Logger::error(Tag(), "Failed to parse JSON: %", e.what());
+        }
+
+        pErrorResponse->error            = JsonUtilsQt::getStringOrDefault(qobj, ErrorResponse::jsonNames().error);
+        pErrorResponse->errorDescription = JsonUtilsQt::getStringOrDefault(qobj, ErrorResponse::jsonNames().errorDescription);
+        pErrorResponse->errorCodes       = JsonUtilsQt::getIntArrayOrEmpty(qobj, ErrorResponse::jsonNames().errorCodes);
+    }
+
+    return pErrorResponse;
+}
+
+bool HttpHelper::addCACertificateBase64(const std::vector<uint8_t>& certificate) {
+  Logger::info(Tag(), "addCACertificateBase64");
+  BIO* bio = BIO_new_mem_buf(certificate.data(), certificate.size());
+  if (bio == nullptr) {
+    return false;
+  }
+  MAKE_GUARD([=]() { BIO_free(bio); });
+
+  X509* x509 = PEM_read_bio_X509(bio, 0, 0, 0);
+  if (x509 == nullptr) {
+    return false;
+  }
+  MAKE_GUARD([=]() { X509_free(x509); });
+
+  return true;
+}
+
+bool HttpHelper::addCACertificateDer(const std::vector<uint8_t>& certificate) {
+  Logger::info(Tag(), "addCACertificateDer");
+  const unsigned char* data = (const unsigned char*)certificate.data();
+  X509* x509 = d2i_X509(nullptr, &data, certificate.size());
+  if (!x509) {
+    return false;
+  }
+  MAKE_GUARD([=]() { X509_free(x509); });
+
+  BIO* bio = BIO_new(BIO_s_mem());
+  if (!bio) {
+    return false;
+  }
+  MAKE_GUARD([=]() { BIO_free(bio); });
+
+  int nret = PEM_write_bio_X509(bio, x509);
+  char* buf = 0;
+  auto len = BIO_get_mem_data(bio, &buf);
+  
+  if (nret == 0 || len == 0 || buf == nullptr) {
+    return false;
+  }
+  return true;
+}
+
+
+TokenResponsePtr HttpHelperQt::deserializeTokenResponse(const String& body)
+{
+    Logger::info(Tag(), "deserializeTokenResponse");
+    auto pTokenResponse = std::make_shared<TokenResponse>();
+
+    StringStream ss; ss << "jsonObject: " << body;
+    Logger::hidden(Tag(), ss.str());
+
+    nlohmann::json qobj;
+    try {
+        qobj = nlohmann::json::parse(body);
+    }
+    catch(std::exception& e)
+    {
+        throw RmsauthException(String("deserializeTokenResponse: ") + e.what());
+    }
+
+    pTokenResponse->tokenType     = JsonUtilsQt::getStringOrDefault(qobj, TokenResponse::jsonNames().tokenType);
+    pTokenResponse->accessToken   = JsonUtilsQt::getStringOrDefault(qobj, TokenResponse::jsonNames().accessToken);
+    pTokenResponse->refreshToken  = JsonUtilsQt::getStringOrDefault(qobj, TokenResponse::jsonNames().refreshToken);
+    pTokenResponse->resource      = JsonUtilsQt::getStringOrDefault(qobj, TokenResponse::jsonNames().resource);
+    pTokenResponse->idToken       = JsonUtilsQt::getStringOrDefault(qobj, TokenResponse::jsonNames().idToken);
+    pTokenResponse->createdOn     = JsonUtilsQt::getStringAsIntOrDefault(qobj, TokenResponse::jsonNames().createdOn);
+    pTokenResponse->expiresOn     = JsonUtilsQt::getStringAsIntOrDefault(qobj, TokenResponse::jsonNames().expiresOn);
+    pTokenResponse->expiresIn     = JsonUtilsQt::getStringAsIntOrDefault(qobj, TokenResponse::jsonNames().expiresIn);
+    pTokenResponse->correlationId = JsonUtilsQt::getStringOrDefault(qobj, TokenResponse::jsonNames().correlationId);
+
+    pTokenResponse->error            = JsonUtilsQt::getStringOrDefault(qobj, TokenResponse::jsonNames().error);
+    pTokenResponse->errorDescription = JsonUtilsQt::getStringOrDefault(qobj, TokenResponse::jsonNames().errorDescription);
+    pTokenResponse->errorCodes       = JsonUtilsQt::getIntArrayOrEmpty(qobj, TokenResponse::jsonNames().errorCodes);
+
+    return pTokenResponse;
+}
+
+void HttpHelperQt::logRequestHeaders(const Headers& headers)
+{
+    Logger::info(Tag(), "logRequestHeaders");
+    if(!headers.empty())
+    {
+        Logger::info(Tag(), "--> Headers:");
+        for(const auto& header : headers)
+        {
+            StringStream ss; ss << header.first << ": " << header.second;
+            Logger::info(Tag(), ss.str());
+        }
+    }
+}
+
+void HttpHelperQt::logResponseHeaders(const String& headers)
+{
+    Logger::hidden(Tag(), "logResponseHeaders");
+    if (!headers.empty())
+    {
+        Logger::hidden(Tag(), "--> Headers:");
+        std::istringstream iss(headers);
+        String line;
+        while (std::getline(iss, line)) {
+            if (!line.empty() && line != "\r") {
+                Logger::hidden(Tag(), line);
+            }
+        }
+    }
+}
+
+void HttpHelperQt::logResponseBody(const String& body)
+{
+    Logger::hidden(Tag(), "logResponseBody");
+    if (!body.empty())
+    {
+        Logger::hidden(Tag(), "==> Body:");
+        Logger::hidden(Tag(), body);
     }
 }
 
