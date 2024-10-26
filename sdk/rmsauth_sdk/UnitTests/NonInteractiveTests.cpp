@@ -24,6 +24,8 @@
 #include <ClientCredential.h>
 #include <cassert>
 
+#include <RequestParameters.h>
+
 Q_DECLARE_METATYPE(rmsauth::String)
 
 using namespace std;
@@ -38,6 +40,32 @@ NonInteractiveTests::NonInteractiveTests(QString clientId,
   : clientId_(clientId), resource_(resource), authority_(authority),
     userName_(userName), password_(password), clientSecret_(clientSecret)
 {}
+
+void NonInteractiveTests::UriEncodeTest_data()
+{
+  QTest::addColumn<String>("uri");
+  QTest::addColumn<String>("encodedUri");
+
+  QTest::newRow("uri1")
+    << String("Hello World!")
+    << String("Hello%20World%21");
+
+  QTest::newRow("uri2")
+    << String("http://www.baidu.com/s?ie=utf-8&f=8&tn=baidu&wd=临时邮箱")
+    << String("http%3A%2F%2Fwww.baidu.com%2Fs%3Fie%3Dutf-8%26f%3D8%26tn%3Dbaidu%26wd%3D%E4%B8%B4%E6%97%B6%E9%82%AE%E7%AE%B1");
+}
+
+void NonInteractiveTests::UriEncodeTest()
+{
+  QFETCH(String, uri);
+  QFETCH(String, encodedUri);
+  qDebug() << "====== NonInteractiveTests::UriEncodeTest() ======";
+
+  auto encodeUri = RequestParameters::uriEncode(uri);
+
+  qDebug() << "UriEncodeTest() encodeUri: " << encodeUri.c_str();
+  QVERIFY(encodeUri == encodedUri);
+}
 
 void NonInteractiveTests::OAuth2ResponseTest()
 {

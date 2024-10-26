@@ -24,7 +24,12 @@ public:
 
 private Q_SLOTS:
 
+  //add uriencode test
+  void UriEncodeTest_data();
+  void UriEncodeTest();
+
   void OAuth2ResponseTest();
+
   void AuthenticationResultTest_data();
   void AuthenticationResultTest();
   void CacheTest_data();
