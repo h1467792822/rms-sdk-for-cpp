@@ -34,14 +34,7 @@ class RMSXmlParser {
                 return std::string();
             }
 
-            printNode(rootNode);
-
-            // xmlChar* xmlns = xmlGetNsProp(rootNode, (xmlChar *)"xmlns", NULL);
-            // if (xmlns == nullptr) {
-            //     Logger::Error("RMSXmlParser::xmlGetNsProp rootNode: %s, type: %d", rootNode->name, rootNode->type);
-            //     Logger::Error("RMSXmlParser::SelectSingleNode: %s", "get xmlns result is empty.");
-            //     return std::string();
-            // }
+            // printNode(rootNode);
 
             const xmlChar* xmlns = (rootNode->ns == nullptr) ? nullptr : rootNode->ns->href;
 
@@ -64,9 +57,6 @@ class RMSXmlParser {
 
             std::string xPathPattern("");
             if (xmlns != nullptr) {
-                // std::string xmlnsStr(static_cast<const char*>(static_cast<void*>(const_cast<unsigned char*>(xmlns))));
-                // xPathPattern = "/ns:" + xPath;
-                // xPathPattern = "/ns:kml/ns:Document/ns:Placemark[last()]/ns:GeometryCollection/ns:LineString/ns:coordinates/text()";
                 xPathPattern = "/" + constructXPathPattern(xPath, "/", "ns", "text()");
             } else {
                 xPathPattern = "/" + xPath;
@@ -79,7 +69,7 @@ class RMSXmlParser {
                 return std::string();
             }
 
-            printxmlXPathObject(result);
+            // printxmlXPathObject(result);
 
             if (xmlXPathNodeSetIsEmpty(result->nodesetval)) {
                 Logger::Error("RMSXmlParser::SelectSingleNode:%s", " xmlXPathNodeSetIsEmpty error.");
