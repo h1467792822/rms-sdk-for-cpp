@@ -13,10 +13,10 @@
 #include <RmsauthIdHelper.h>
 #include <Logger.h>
 #include "HttpHelperQt.h"
-#include <QNetworkRequest>
-#include <QEventLoop>
-#include <QCoreApplication>
-#include <QTimer>
+// #include <QNetworkRequest>
+// #include <QEventLoop>
+// #include <QCoreApplication>
+// #include <QTimer>
 
 namespace rmsauth {
 
@@ -29,30 +29,39 @@ void AuthenticatorTemplate::verifyAnotherHostByInstanceDiscoveryAsync(const Stri
     instanceDiscoveryEndpoint = StringUtils::replace(instanceDiscoveryEndpoint, AuthenticatorTemplate::HOST(), host);
     instanceDiscoveryEndpoint = StringUtils::replace(instanceDiscoveryEndpoint, AuthenticatorTemplate::TENANT(), tenant);
 
-    QNetworkRequest request = HttpHelperQt::createRequest();
-    request.setUrl(QUrl(instanceDiscoveryEndpoint.data()));
+    // QNetworkRequest request = HttpHelperQt::createRequest();
+    // request.setUrl(QUrl(instanceDiscoveryEndpoint.data()));
 
-//    HttpHelperQt::addCorrelationIdHeadersToRequest(request, callState);
-    HttpHelperQt::addHeadersToRequest(request, RmsauthIdHelper::getPlatformHeaders());
-    HttpHelperQt::addHeadersToRequest(request, RmsauthIdHelper::getProductHeaders());
+    // HttpHelperQt::addHeadersToRequest(request, RmsauthIdHelper::getPlatformHeaders());
+    // HttpHelperQt::addHeadersToRequest(request, RmsauthIdHelper::getProductHeaders());
+
+    // InstanceDiscoveryResponsePtr discoveryResponsePtr = nullptr;
+    // if(QCoreApplication::instance() == nullptr)
+    // {
+    //     auto fut = std::async(&HttpHelperQt::jobGetRunner, std::ref(request), callState);
+    //     auto body = fut.get();
+    //     discoveryResponsePtr = HttpHelperQt::deserializeInstanceDiscoveryResponse(body);
+    // }
+    // else
+    // {
+    //     auto body = HttpHelperQt::jobGet(request, callState);
+    //     discoveryResponsePtr = HttpHelperQt::deserializeInstanceDiscoveryResponse(body);
+    // }
+
+    Headers headers;
+    HttpHelperQt::addHeadersToRequest(headers, RmsauthIdHelper::getPlatformHeaders());
+    HttpHelperQt::addHeadersToRequest(headers, RmsauthIdHelper::getProductHeaders());
 
     InstanceDiscoveryResponsePtr discoveryResponsePtr = nullptr;
-    if(QCoreApplication::instance() == nullptr)
-    {
-        auto fut = std::async(&HttpHelperQt::jobGetRunner, std::ref(request), callState);
-        auto body = fut.get();
-        discoveryResponsePtr = HttpHelperQt::deserializeInstanceDiscoveryResponse(body);
-    }
-    else
-    {
-        auto body = HttpHelperQt::jobGet(request, callState);
-        discoveryResponsePtr = HttpHelperQt::deserializeInstanceDiscoveryResponse(body);
-    }
+    auto fut = std::async(std::launch::async, [&]() {
+        return HttpHelperQt::jobGet(instanceDiscoveryEndpoint, headers, callState);
+    });
+    auto body = fut.get();
+    discoveryResponsePtr = HttpHelperQt::deserializeInstanceDiscoveryResponse(body);
 
     if (discoveryResponsePtr == nullptr || discoveryResponsePtr->tenantDiscoveryEndpoint.empty())
     {
         throw RmsauthException(Constants::rmsauthError().AuthorityNotInValidList);
     }
 }
-
 } // namespace rmsauth {
