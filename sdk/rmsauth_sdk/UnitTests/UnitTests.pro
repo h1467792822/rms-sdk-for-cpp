@@ -14,9 +14,9 @@ unix:!mac:LIBS  += -lssl -lcrypto -lsecret-1 -lglib-2.0
 
 CONFIG(debug, debug|release) {
     TARGET = $$join(TARGET,,,d)
-    LIBS +=  -L$$REPO_ROOT/bin -lrmsauthd -lrmsauthWebAuthDialogd -lrmscryptod
+    LIBS +=  -L$$REPO_ROOT/bin -lrmsauthd -lrmsauthWebAuthDialogd -lrmscryptod -lcurld
 } else {
-    LIBS +=  -L$$REPO_ROOT/bin -lrmsauth -lrmsauthWebAuthDialog -lrmscrypto
+    LIBS +=  -L$$REPO_ROOT/bin -lrmsauth -lrmsauthWebAuthDialog -lrmscrypto -lcurl
 }
 
 INCLUDEPATH = ../rmsauth/rmsauth
