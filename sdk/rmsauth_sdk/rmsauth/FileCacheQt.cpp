@@ -12,7 +12,7 @@
 #include <filesystem>
 // #include <QDir>
 // #include <QFileInfo>
-#include <QStandardPaths>
+// #include <QStandardPaths>
 #include <filesystem>
 
 #include "../../rmsutils/RMSDir.h"
@@ -29,16 +29,18 @@ FileCache::FileCache(const String& filePath)
   if (filePath.empty()) // using default settings
   {
     const std::string fileName = "token_cache.dat";
-    auto path              = QStandardPaths::writableLocation(
-      QStandardPaths::HomeLocation) + "/.ms-ad";
+    // auto path              = QStandardPaths::writableLocation(
+    //   QStandardPaths::HomeLocation) + "/.ms-ad";
 
-    if (!rmscore::common::RMSDir::mkpath(path.toStdString()))
+    auto path =  std::string(getenv("HOME")) + "/.ms-ad";
+
+    if (!rmscore::common::RMSDir::mkpath(path))
     {
       throw RmsauthException("Can't create cache directory");
     }
     // QFileInfo fi(QDir(path), fileName);
     // cacheFilePath_ = fi.absoluteFilePath().toStdString();
-    cacheFilePath_ = fs::absolute(fs::path(path.toStdString())/fs::path(fileName)).string();
+    cacheFilePath_ = fs::absolute(fs::path(path)/fs::path(fileName)).string();
   }
   else
   {
