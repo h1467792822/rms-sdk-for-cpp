@@ -13,6 +13,7 @@
 #include "../rmsauth/HttpHelper.h"
 #include "NonInteractiveTests.h"
 #include "InteractiveTests.h"
+#include "UrlQtTests.h"
 
 #include "../../rmsutils/RMSDir.h"
 
@@ -82,6 +83,8 @@ int main(int argc, char *argv[])
   qDebug() << "CertificatesPath: " << certificatesPathStr;
 
   int res = 0;
+
+  res += QTest::qExec(new UrlQtTests(), argc, argv);
 
   if (interactive)
   {

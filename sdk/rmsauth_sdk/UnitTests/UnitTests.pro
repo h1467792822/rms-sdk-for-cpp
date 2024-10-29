@@ -26,8 +26,10 @@ TEMPLATE = app
 SOURCES += \
     main.cpp \
     NonInteractiveTests.cpp\
-    InteractiveTests.cpp
+    InteractiveTests.cpp\
+    UrlQtTests.cpp
 
 HEADERS += \
     NonInteractiveTests.h\
-    InteractiveTests.h
+    InteractiveTests.h\
+    UrlQtTests.h

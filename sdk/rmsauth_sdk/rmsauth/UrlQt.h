@@ -9,7 +9,6 @@
 #ifndef URLQT_H
 #define URLQT_H
 
-#include <QUrl>
 #include <Url.h>
 
 namespace rmsauth {
@@ -29,7 +28,7 @@ public:
     bool isValid() const override;
 
 private:
-    QUrl url_;
+    String url_; 
 };
 
 } // namespace rmsauth {

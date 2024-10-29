@@ -8,7 +8,9 @@
 
 #include "UrlQt.h"
 #include <Url.h>
+#include <regex>
 
+using namespace std;
 namespace rmsauth {
 
 Url::Url() : pImpl(std::make_shared<UrlQt>())
@@ -29,37 +31,52 @@ UrlQt::UrlQt(const String& url) : url_(url.data())
 
 void UrlQt::setUrl(const String& url)
 {
-    this->url_.setUrl(url.data());
+    this->url_ = url;
 }
 
 String UrlQt::toString() const
 {
-    return this->url_.toString().toStdString();
+    return this->url_;
 }
-
+String matches(const String& url, const String& regularExpression) 
+{
+    smatch matches;
+    regex pattern(regularExpression);
+    if (regex_search(url, matches, pattern) && matches.size() > 1) {
+        return matches[1].str();
+    }
+    return "";
+}
 String UrlQt::scheme() const
 {
-    return this->url_.scheme().toStdString();
+    string regularExpression = R"(^([a-zA-Z]+):)";
+    return matches(this->url_, regularExpression);
 }
 String UrlQt::authority() const
 {
-    return this->url_.authority().toStdString();
+    string regularExpression = R"(^[^:]+://([^/]+)(/.*)?)";
+    return matches(this->url_, regularExpression);
 }
 String UrlQt::host() const
 {
-    return this->url_.host().toStdString();
+    string regularExpression = R"(^[^:]+://([^/:]+)(:[\d]+)?([^#?\s]+))";
+    return matches(this->url_, regularExpression);
 }
 String UrlQt::fragment() const
 {
-    return this->url_.fragment().toStdString();
+    string regularExpression = R"(#([^#?]*))";
+    return matches(this->url_, regularExpression);
 }
 String UrlQt::path() const
 {
-    return this->url_.path().toStdString();
+    string regularExpression = R"(^[^:]+://[^\/]+(\/[^?#]*)(?:\?[^#]*)?(?:#.*)?$)";
+    return matches(this->url_, regularExpression);
 }
 bool UrlQt::isValid() const
 {
-    return this->url_.isValid();
+    regex pattern("^(https?://)?([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z0-9]{2,6}"
+        "(:[0-9]{1,5})?(/.*)?$");
+    return std::regex_match(this->url_, pattern);
 }
 
 } // namespace rmsauth {
