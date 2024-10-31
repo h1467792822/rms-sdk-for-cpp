@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
+project(rmscrypto_sdk)
+
 set(RMSCRYPTO_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(ROOT_DIR ${RMSCRYPTO_DIR}/../..)
 set(ROOT_BIN_DIR ${ROOT_DIR}/bin)
@@ -16,6 +18,3 @@ add_subdirectory(Crypto)
 add_subdirectory(CryptoAPI)
 
 # add_subdirectory(UnitTests)
-
-# add_dependencies(CryptoAPI Crypto)
-# add_dependencies(Crypto Platform)
