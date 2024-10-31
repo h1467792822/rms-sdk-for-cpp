@@ -47,7 +47,7 @@ PUBLIC
     modcrypto
     platformkeystorage
     platformcrypto
-    platformsettings
+    cryptoplatformsettings
     ssl
     crypto
     secret-1

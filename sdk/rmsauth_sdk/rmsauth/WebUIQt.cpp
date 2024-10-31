@@ -9,14 +9,17 @@
 #include <IWebUI.h>
 #include <Logger.h>
 #include <Exceptions.h>
+#if 0
 #include "../WebAuthDialog/Dialog.h"
 #include <QDialog>
 #include <QApplication>
 #include <QTimer>
 #include <QDebug>
+#endif
 
 namespace rmsauth {
 
+#if 0
 static String jobAuthenticate(const String& requestUri, const String& callbackUri, bool useCookie)
 {
     Dialog d(requestUri.data(), callbackUri.data(), useCookie);
@@ -29,6 +32,7 @@ static String jobAuthenticate(const String& requestUri, const String& callbackUr
 
     throw  RmsauthException("Canceled by user");
 }
+#endif
 
 #ifdef QT_VER_LESS_THEN_54
 static void messageInterceptor(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -78,18 +82,13 @@ static String jobRunnerAuthenticate(const String& requestUri, const String& call
 
 String WebUI::authenticate(const String& requestUri, const String& callbackUri)
 {
+    return String();
+    #if 0
     bool useCookie = promptBehavior_ != PromptBehavior::Always;
 
     if(qApp == nullptr)
     {
-#ifdef QT_VER_LESS_THEN_54
-        // To avoid issue #17 (https://github.com/MSOpenTech/rms-sdk-cpp/issues/17)
-        // for QT versions less then 5.4
-        // we need to create QApplication instance in a separate thread.
-        auto fut  = std::async(std::launch::async, &jobRunnerAuthenticate, requestUri, callbackUri, useCookie);
-        auto result = fut.get();
-        return std::move(result);
-#else
+
         int argc = 1;
         char name[] = "authenticate";
         char ** argv = new char*[argc];
@@ -101,11 +100,12 @@ String WebUI::authenticate(const String& requestUri, const String& callbackUri)
         QTimer::singleShot(0, &a, SLOT(quit()));
         a.exec();
         return std::move(result);
-#endif
+
     }
 
     auto result = jobAuthenticate(requestUri, callbackUri, useCookie);
     return std::move(result);
+    #endif
 }
 
 } // namespace rmsauth {

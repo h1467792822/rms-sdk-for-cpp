@@ -2,8 +2,6 @@
 set(REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../..)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# 设置输出目录
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${REPO_ROOT}/bin/rms/platform)
 
 # 设置项目名和目标
 project(platformhttp)
@@ -43,3 +41,8 @@ target_sources(${PROJECT_NAME} PRIVATE
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")
 endif()
+
+# 设置输出目录
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${REPO_ROOT}/bin/rms"
+)
