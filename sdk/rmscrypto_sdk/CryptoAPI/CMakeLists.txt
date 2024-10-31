@@ -4,16 +4,17 @@ set(TARGET_NAME rmscrypto)
 PROJECT(${TARGET_NAME} VERSION 1.0.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CRYPTO_DIR ${CMAKE_BINARY_DIR})
-set(CRYPTO_PLATFORM_DIR ${CMAKE_BINARY_DIR})
 
-add_definitions(-DRMS_CRYPTO_LIBRARY)
+# message(STATUS "${TARGET_NAME} LIBRARY_OUTPUT_PATH: ${ROOT_BIN_DIR}")
+set(LIBRARY_OUTPUT_PATH ${ROOT_BIN_DIR})
+
+add_definitions(-DRMS_CRYPTO_LIBRARY )
 include_directories(
     /usr/include/glib-2.0/
     /usr/include/libsecret-1/
     /usr/lib/x86_64-linux-gnu/glib-2.0/include/
 )
-link_directories(${CRYPTO_DIR} ${CRYPTO_PLATFORM_DIR})
+link_directories(${ROOT_BIN_CRYPTO_DIR} ${ROOT_BIN_CRYPTO_PLATFORM_DIR})
 
 set(SOURCES_FILE
     BlockBasedProtectedStream.cpp
@@ -51,6 +52,3 @@ PUBLIC
     crypto
     secret-1
     glib-2.0)
-
-#set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
