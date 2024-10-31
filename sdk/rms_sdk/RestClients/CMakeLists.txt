@@ -1,12 +1,21 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.14)
+project(modrestclients)
 
-set(TARGET_NAME modrestclients)
-
-PROJECT(${TARGET_NAME} VERSION 1.0.0.0 LANGUAGES CXX)
-
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCES_FILE
+# 设置输出目录
+set(REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
+
+
+
+# Debug 模式下添加 'd' 后缀
+set(CMAKE_DEBUG_POSTFIX "d")
+
+# 源文件
+set(SOURCES
     UsageRestrictionsClient.cpp
     RestServiceUrlClient.cpp
     RestHttpClient.cpp
@@ -21,9 +30,11 @@ set(SOURCES_FILE
     ServiceDiscoveryClient.cpp
     RestClientCache.cpp
     TemplatesClient.cpp
-    PublishClient.cpp)
+    PublishClient.cpp
+)
 
-set(HEAD_FILE
+# 头文件
+set(HEADERS
     RestObjects.h
     IUsageRestrictionsClient.h
     IPublishClient.h
@@ -48,9 +59,25 @@ set(HEAD_FILE
     TemplatesClient.h
     ITemplatesClient.h
     PublishClient.h
-    LicenseParserResult.h)
+    LicenseParserResult.h
+)
 
-add_library(${TARGET_NAME} STATIC ${SOURCE_FILE} ${HEAD_FILE})
-set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+# 创建静态库
+add_library(${PROJECT_NAME} STATIC
+    ${SOURCES}
+    ${HEADERS}
+)
 
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
+# 设置包含目录
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${REPO_ROOT}/sdk/rmscrypto_sdk/CryptoAPI
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    /usr/include/libxml2
+)
+
+# 设置输出目录
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${REPO_ROOT}/bin/rms"
+)

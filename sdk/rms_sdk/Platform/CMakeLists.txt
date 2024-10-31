@@ -1,10 +1,13 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
+project(Platform)
 
-#project(platform)
+# 定义 QTFRAMEWORK 宏
+# add_definitions(-DQTFRAMEWORK)
 
-add_subdirectory(Filesystem)
+# 添加所有子目录
 add_subdirectory(Http)
+# add_subdirectory(Common)
+add_subdirectory(Filesystem)
 add_subdirectory(Json)
 add_subdirectory(Settings)
-
-
+# add_subdirectory(Xml)

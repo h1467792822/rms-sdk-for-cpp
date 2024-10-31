@@ -1,19 +1,25 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
-set(TARGET_NAME modjson)
+# 设置项目名称
+project(modjson)
+set(REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-PROJECT(${TARGET_NAME} VERSION 1.0.0.0 LANGUAGES CXX)
-
+# 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCES_FILE
-    jsonserializer.cpp)
+# Debug 模式下添加 'd' 后缀
+set(CMAKE_DEBUG_POSTFIX "d")
 
-set(HEAD_FILE
+# 添加静态库
+add_library(${PROJECT_NAME} STATIC
+    jsonserializer.cpp
     IJsonSerializer.h
-    jsonserializer.h)
+    jsonserializer.h
+)
 
-add_library(${TARGET_NAME} STATIC ${SOURCE_FILE} ${HEAD_FILE})
-set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
+# 设置输出目录
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${REPO_ROOT}/bin/rms"
+)

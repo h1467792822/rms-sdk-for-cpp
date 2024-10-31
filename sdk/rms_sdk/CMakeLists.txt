@@ -1,11 +1,16 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
+project(rms_sdk)
 
-#set(DEP_LIST platformfilesystem platformhttp platformjson platformsettings)
-#add_custom_target(PlatformCommand
-#    COMMAND ${CMAKE_COMMAND} -E echo "rms_sdk platform build"
-#    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/platform
-#    DEPENDS
-#        ${DEP_LIST}
-#	)
+# 设置一些通用变量
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#set_property(TARGET PlatformCommand PROPERTY FOLD "PlatformCommand")
+# 按依赖顺序添加子目录
+add_subdirectory(Platform)    # 最基础的依赖
+add_subdirectory(Common)      # 依赖 Platform
+add_subdirectory(Json)
+add_subdirectory(Core)
+add_subdirectory(Consent)
+add_subdirectory(PFile)
+add_subdirectory(RestClients) # 依赖 PFile
+add_subdirectory(ModernAPI)   # 依赖其他所有模块

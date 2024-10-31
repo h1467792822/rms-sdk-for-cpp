@@ -1,22 +1,38 @@
-cmake_minimum_required(VERSION 3.0)
+# 设置 REPO_ROOT
+set(REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../..)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(TARGET_NAME platformfilesystem)
+# 设置输出目录
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${REPO_ROOT}/bin/rms/platform)
 
-PROJECT(${TARGET_NAME} VERSION 1.0.0.0 LANGUAGES CXX)
+# 设置项目名和目标
+project(platformfilesystem)
+add_library(${PROJECT_NAME} STATIC)
 
+# 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCES_FILE
+# 添加包含目录
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${REPO_ROOT}/sdk/rmscrypto_sdk/CryptoAPI
+)
+
+# 添加源文件
+target_sources(${PROJECT_NAME} PRIVATE
     FileQt.cpp
-    FileSystemQt.cpp)
+    FileSystemQt.cpp
+)
 
-set(HEAD_FILE
+# 添加头文件
+target_sources(${PROJECT_NAME} PRIVATE
     IFile.h
     IFileSystem.h
     FileQt.h
-    FileSystemQt.h)
+    FileSystemQt.h
+)
 
-add_library(${TARGET_NAME} STATIC ${SOURCE_FILE} ${HEAD_FILE})
-set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
+# Debug 配置下添加后缀 'd'
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")
+endif()
