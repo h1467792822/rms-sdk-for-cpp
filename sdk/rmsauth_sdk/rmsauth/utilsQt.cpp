@@ -9,7 +9,6 @@
 #include <utils.h>
 #include <openssl/sha.h>
 #include <string>
-#include <QDebug>
 
                   
 namespace rmsauth {
