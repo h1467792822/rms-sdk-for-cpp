@@ -7,7 +7,9 @@
 */
 
 #include <string>
-#include <QCryptographicHash>
+#include <memory>
+#include <openssl/evp.h>
+#include <openssl/sha.h>
 #include "CryptoEngine.h"
 #include "../../CryptoAPI/RMSCryptoExceptions.h"
 using namespace std;
@@ -20,20 +22,17 @@ shared_ptr<ICryptoEngine>ICryptoEngine::Create() {
 }
 namespace platform {
 namespace crypto {
-static QCryptographicHash::Algorithm MapHashAlgorithm(
-  api::CryptoHashAlgorithm algorithm)
-{
-  switch (algorithm)
-  {
-  case api::CRYPTO_HASH_ALGORITHM_SHA1:
-    return QCryptographicHash::Sha1;
+static const EVP_MD* MapHashAlgorithm(api::CryptoHashAlgorithm algorithm) {
+    switch (algorithm) {
+    case api::CRYPTO_HASH_ALGORITHM_SHA1:
+        return EVP_sha1();  // 返回 SHA1 的 OpenSSL 哈希方法
 
-  case api::CRYPTO_HASH_ALGORITHM_SHA256:
-    return QCryptographicHash::Sha256;
+    case api::CRYPTO_HASH_ALGORITHM_SHA256:
+        return EVP_sha256(); // 返回 SHA256 的 OpenSSL 哈希方法
 
-  default:
-    throw exceptions::RMSCryptoInvalidArgumentException("Invalid algorithm");
-  }
+    default:
+        throw exceptions::RMSCryptoInvalidArgumentException("Invalid algorithm");
+    }
 }
 
 shared_ptr<api::ICryptoKey>CryptoEngine::CreateKey(const uint8_t       *pbKey,
@@ -50,13 +49,12 @@ shared_ptr<api::ICryptoKey>CryptoEngine::CreateKey(const uint8_t       *pbKey,
   throw exceptions::RMSCryptoInvalidArgumentException("Invalid algorithm");
 }
 
-shared_ptr<api::ICryptoHash>CryptoEngine::CreateHash(
-  api::CryptoHashAlgorithm algorithm)
-{
-  auto hash = make_shared<QCryptographicHash>(MapHashAlgorithm(algorithm));
-
-  return make_shared<CryptoHash>(hash, algorithm);
+shared_ptr<api::ICryptoHash> CryptoEngine::CreateHash(api::CryptoHashAlgorithm algorithm) {
+    const EVP_MD* evpMd = MapHashAlgorithm(algorithm); // 获取 OpenSSL 哈希方法
+    return make_shared<CryptoHash>(evpMd); // 创建 CryptoHash 对象，传入 OpenSSL 哈希方法
 }
+
 } // namespace crypto
 } // namespace platform
 } // namespace rmscrypto
+
