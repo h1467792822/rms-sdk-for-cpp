@@ -16,14 +16,14 @@ link_directories(${GLIB_LIBRARY_DIRS})
 message("GLIB_INCLUDE_DIRS: ${GLIB_INCLUDE_DIRS}, GLIB_LIBRARY_DIRS: ${GLIB_LIBRARY_DIRS}, GLIB_LIBRARY: ${GLIB_LIBRARIES}")
 
 set(SOURCES_FILE
-    KeyStoragePosix.h)
-
-set(HEAD_FILE
     KeyStoragePosix.cpp)
 
-add_library(${TARGET_NAME} STATIC ${SOURCE_FILE} ${HEAD_FILE})
+set(HEAD_FILE
+    KeyStoragePosix.h)
+
+add_library(${TARGET_NAME} STATIC ${SOURCES_FILE} ${HEAD_FILE})
 
 target_link_libraries(${TARGET_NAME} ${GLIB_LIBRARIES})
 
-set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+#set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})

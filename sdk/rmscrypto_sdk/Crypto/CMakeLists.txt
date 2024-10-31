@@ -16,9 +16,9 @@ set(HEAD_FILE
     EcbCryptoProvider.h
     CryptoConstants.h)
 
-add_library(${TARGET_NAME} STATIC ${SOURCE_FILE} ${HEAD_FILE})
+add_library(${TARGET_NAME} STATIC ${SOURCES_FILE} ${HEAD_FILE})
 
 target_link_libraries(${TARGET_NAME} platformcrypto)
 
-set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+#set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})

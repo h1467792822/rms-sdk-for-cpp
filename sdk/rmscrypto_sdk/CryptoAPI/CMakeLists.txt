@@ -39,7 +39,7 @@ set(HEAD_FILE
     RMSCryptoExceptions.h
     IRMSCryptoEnvironment.h)
 
-add_library(${TARGET_NAME} SHARED ${SOURCE_FILE} ${HEAD_FILE})
+add_library(${TARGET_NAME} SHARED ${SOURCES_FILE} ${HEAD_FILE})
 
 target_link_libraries(${TARGET_NAME}
 PUBLIC
@@ -52,5 +52,5 @@ PUBLIC
     secret-1
     glib-2.0)
 
-set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+#set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
