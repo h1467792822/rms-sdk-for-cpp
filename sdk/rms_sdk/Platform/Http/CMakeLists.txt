@@ -35,7 +35,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 )
 
 # 添加编译定义
-# target_compile_definitions(${PROJECT_NAME} PRIVATE QTFRAMEWORK)
+target_compile_definitions(${PROJECT_NAME} PRIVATE QTFRAMEWORK)
 
 # Debug 配置下添加后缀 'd'
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

@@ -8,7 +8,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 设置输出目录
 set(REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
-
+# find_package(LibXml2 REQUIRED)
+# pkg_check_modules(GLIB REQUIRED libxml)
+# include_directories(${GLIB_INCLUDE_DIRS})
+# link_directories(${GLIB_LIBRARY_DIRS})
 
 
 # Debug 模式下添加 'd' 后缀
@@ -67,6 +70,9 @@ add_library(${PROJECT_NAME} STATIC
     ${SOURCES}
     ${HEADERS}
 )
+
+
+target_link_libraries(${PROJECT_NAME} xml2)
 
 # 设置包含目录
 target_include_directories(${PROJECT_NAME} PRIVATE

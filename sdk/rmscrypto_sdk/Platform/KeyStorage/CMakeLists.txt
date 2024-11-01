@@ -17,10 +17,13 @@ link_directories(${GLIB_LIBRARY_DIRS})
 # message(STATUS "GLIB_INCLUDE_DIRS: ${GLIB_INCLUDE_DIRS}, GLIB_LIBRARY_DIRS: ${GLIB_LIBRARY_DIRS}, GLIB_LIBRARY: ${GLIB_LIBRARIES}")
 
 set(SOURCES_FILE
-    KeyStoragePosix.cpp)
+    KeyStoragePosix.cpp
+    base64.cpp)
 
 set(HEAD_FILE
-    KeyStoragePosix.h)
+    KeyStoragePosix.h
+    base64.h
+    IKeyStorage.h)
 
 add_library(${TARGET_NAME} STATIC ${SOURCES_FILE} ${HEAD_FILE})
 

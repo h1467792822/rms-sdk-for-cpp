@@ -6,11 +6,12 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # 设置项目名和目标
 project(platformfilesystem)
-add_library(${PROJECT_NAME} STATIC)
-
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_library(${PROJECT_NAME} STATIC)
+
+
 
 # 添加包含目录
 target_include_directories(${PROJECT_NAME} PRIVATE
