@@ -7,7 +7,7 @@
 */
 
 #ifdef QTFRAMEWORK
-#include<QDir>
+// #include<QDir>
 #include<vector>
 #include"FileSystemQt.h"
 #include"FileQt.h"
@@ -43,8 +43,8 @@ void FileSystemQt::DeleteLocalStorageFile(const std::string& filePath)
 }
 
 void IFileSystem::CreateDirectory(const std::string& dirPath) {
-    auto directory = QString::fromStdString(dirPath);
-    if (!std::filesystem::exists(directory.toStdString())) {
+    // auto directory = QString::fromStdString(dirPath);
+    if (!std::filesystem::exists(dirPath)) {
       // QDir dir;
       // dir.mkpath(directory);
       common::RMSDir::mkpath(dirPath);
