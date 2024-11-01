@@ -11,22 +11,6 @@ include_directories(${REPO_ROOT}/sdk/rmscrypto_sdk/CryptoAPI)
 # 定义为库项目
 add_library(rms SHARED)
 
-
-
-# 在链接库之前添加详细的库路径信息
-find_library(RMSCRYPTO_LIB 
-    NAMES rmscrypto rmscryptod
-    PATHS ${REPO_ROOT}/bin
-          ${REPO_ROOT}/bin/rms
-          ${REPO_ROOT}/bin/rms/platform
-    NO_DEFAULT_PATH
-)
-# message("RMSCRYPTO_LIB found at: ${RMSCRYPTO_LIB}")
-
-# if(NOT RMSCRYPTO_LIB)
-#     message(FATAL_ERROR "rmscrypto library not found!")
-# endif()
-
 link_directories(
     ${REPO_ROOT}/bin
     ${REPO_ROOT}/bin/rms
@@ -103,7 +87,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         platformjsond
         platformfilesystemd
         platformsettingsd
-        "${RMSCRYPTO_LIB}"
+        rmscryptod
         ${COMMON_LIBS}
     )
 else()
@@ -118,7 +102,7 @@ else()
         platformjson
         platformfilesystem
         platformsettings
-        "${RMSCRYPTO_LIB}"
+        rmscrypto
         ${COMMON_LIBS}
     )
 endif()
