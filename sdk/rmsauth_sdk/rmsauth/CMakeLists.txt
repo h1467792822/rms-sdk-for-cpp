@@ -133,7 +133,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 # 链接依赖库，使用相对路径
 target_link_directories(${PROJECT_NAME} PRIVATE ${REPO_ROOT}/bin)
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    rmsauthWebAuthDialog
     rmscrypto
 )
 

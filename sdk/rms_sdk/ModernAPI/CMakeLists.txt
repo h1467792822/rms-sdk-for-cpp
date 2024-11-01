@@ -23,9 +23,9 @@ find_library(RMSCRYPTO_LIB
 )
 # message("RMSCRYPTO_LIB found at: ${RMSCRYPTO_LIB}")
 
-if(NOT RMSCRYPTO_LIB)
-    message(FATAL_ERROR "rmscrypto library not found!")
-endif()
+# if(NOT RMSCRYPTO_LIB)
+#     message(FATAL_ERROR "rmscrypto library not found!")
+# endif()
 
 link_directories(
     ${REPO_ROOT}/bin
