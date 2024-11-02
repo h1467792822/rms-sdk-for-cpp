@@ -1,10 +1,3 @@
-# cmake_minimum_required(VERSION 3.10)
-# project(rmsauth_sdk)
-
-# # 只添加 rmsauth 子目录
-# add_subdirectory(rmsauth)
-
-
 cmake_minimum_required(VERSION 3.10)
 project(rmsauth_sdk)
 
@@ -24,3 +17,8 @@ add_custom_target(WebAuthDialog
 # 添加 rmsauth 子目录
 add_subdirectory(rmsauth)
 add_dependencies(rmsauth WebAuthDialog)
+
+if (MAKE_UT_TEST)
+    message(STATUS "${PROJECT_NAME} make UT")
+    add_subdirectory(UnitTests)
+endif()

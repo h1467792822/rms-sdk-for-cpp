@@ -7,7 +7,7 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
-#include "../../rms_sdk/Platform/Logger/Logger.h"
+#include "../rms_sdk/Platform/Logger/Logger.h"
 
 using namespace rmscore::platform::logger;
 using namespace std;

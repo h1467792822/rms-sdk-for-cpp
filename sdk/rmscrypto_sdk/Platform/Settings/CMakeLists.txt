@@ -15,6 +15,5 @@ set(HEAD_FILE
     IRMSCryptoEnvironmentImpl.h)
 
 add_library(${TARGET_NAME} STATIC ${SOURCES_FILE} ${HEAD_FILE})
-# target_compile_definitions()
 
 

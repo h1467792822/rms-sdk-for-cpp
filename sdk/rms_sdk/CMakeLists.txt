@@ -14,3 +14,8 @@ add_subdirectory(Consent)
 add_subdirectory(PFile)
 add_subdirectory(RestClients) # 依赖 PFile
 add_subdirectory(ModernAPI)   # 依赖其他所有模块
+
+if (MAKE_UT_TEST)
+    message(STATUS "${PROJECT_NAME} make UT")
+    add_subdirectory(UnitTests)
+endif()
