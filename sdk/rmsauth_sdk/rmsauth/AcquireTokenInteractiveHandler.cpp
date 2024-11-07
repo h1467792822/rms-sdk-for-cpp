@@ -177,6 +177,10 @@ void AcquireTokenInteractiveHandler::verifyAuthorizationResult()
         throw RmsauthException(Constants::rmsauthError().UserInteractionRequired);
     }
 
+    if (authorizationResult_ == nullptr)
+    {
+        throw RmsauthServiceException("ResultNull", "get result null!");
+    }
     if (authorizationResult_->status() != AuthorizationStatus::Success)
     {
         throw RmsauthServiceException(authorizationResult_->error(), authorizationResult_->errorDescription());
