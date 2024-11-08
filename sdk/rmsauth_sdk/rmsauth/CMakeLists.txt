@@ -154,3 +154,18 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${REPO_ROOT}/bin
     RUNTIME_OUTPUT_DIRECTORY ${REPO_ROOT}/bin
 )
+
+
+if (USE_QT_WEBUI)
+    message(STATUS "USE_QT_WEBUI")
+    add_definitions(-DQT_VER_LESS_THEN_54)
+    # 临时放开qt web页面，请求accesstoken
+    find_package(Qt5 COMPONENTS Core Widgets Network REQUIRED)
+
+    target_link_libraries(${PROJECT_NAME} 
+    PRIVATE
+        Qt::Core
+        Qt::Widgets
+        Qt::Network
+    )
+endif()

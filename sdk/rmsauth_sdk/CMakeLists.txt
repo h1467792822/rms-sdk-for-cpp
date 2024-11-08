@@ -14,6 +14,12 @@ add_custom_target(WebAuthDialog
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/WebAuthDialog
 )
 
+option(USE_QT_WEBUI "use QT web get access token" OFF)
+remove_definitions(-DUSE_QT_WEBUI)
+if (USE_QT_WEBUI)
+    add_definitions(-DUSE_QT_WEBUI)
+endif()
+
 # 添加 rmsauth 子目录
 add_subdirectory(rmsauth)
 add_dependencies(rmsauth WebAuthDialog)

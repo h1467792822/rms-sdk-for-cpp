@@ -9,7 +9,8 @@
 #include <IWebUI.h>
 #include <Logger.h>
 #include <Exceptions.h>
-#if 0
+
+#ifdef USE_QT_WEBUI
 #include "../WebAuthDialog/Dialog.h"
 #include <QDialog>
 #include <QApplication>
@@ -19,7 +20,7 @@
 
 namespace rmsauth {
 
-#if 0
+#ifdef USE_QT_WEBUI
 static String jobAuthenticate(const String& requestUri, const String& callbackUri, bool useCookie)
 {
     Dialog d(requestUri.data(), callbackUri.data(), useCookie);
@@ -82,29 +83,30 @@ static String jobRunnerAuthenticate(const String& requestUri, const String& call
 
 String WebUI::authenticate(const String& requestUri, const String& callbackUri)
 {
-    return String();
-    #if 0
-    bool useCookie = promptBehavior_ != PromptBehavior::Always;
+    #ifdef USE_QT_WEBUI
+        bool useCookie = promptBehavior_ != PromptBehavior::Always;
 
-    if(qApp == nullptr)
-    {
+        if(qApp == nullptr)
+        {
 
-        int argc = 1;
-        char name[] = "authenticate";
-        char ** argv = new char*[argc];
-        argv[0] = name;
+            int argc = 1;
+            char name[] = "authenticate";
+            char ** argv = new char*[argc];
+            argv[0] = name;
 
-        QApplication a(argc, argv);
+            QApplication a(argc, argv);
+
+            auto result = jobAuthenticate(requestUri, callbackUri, useCookie);
+            QTimer::singleShot(0, &a, SLOT(quit()));
+            a.exec();
+            return std::move(result);
+
+        }
 
         auto result = jobAuthenticate(requestUri, callbackUri, useCookie);
-        QTimer::singleShot(0, &a, SLOT(quit()));
-        a.exec();
         return std::move(result);
-
-    }
-
-    auto result = jobAuthenticate(requestUri, callbackUri, useCookie);
-    return std::move(result);
+    #else
+        return String();
     #endif
 }
 
